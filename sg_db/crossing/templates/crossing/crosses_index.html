@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+{% extends "base.html" %}  
+
+{% load render_table from django_tables2 %}
+
+{% block main %} 
+
+<head>
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" />
+</head>
+
+<main>
+	<h2> Current Crosses </h2>
+
+	<form 
+	    action=""
+	    enctype="multipart/form-data"
+	    method="post"
+	>
+	    {% csrf_token %}
+	    {{ form }}
+	    <input type="submit" value = "Submit">
+	<br>
+	<b>Crossing List CSV: </b>
+	<form style="display: inline" action="crossing/export/Crosses" method = "get">
+		<button> Download </button>
+	</form>
+	<br>
+	<hr>
+	
+	{% render_table table %}
+
+</main>
+
+{% endblock %} 

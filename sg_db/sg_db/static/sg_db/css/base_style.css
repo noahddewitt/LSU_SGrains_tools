@@ -1,0 +1,114 @@
+* {
+	list-style: none;
+	text-decoration: none;
+	margin: 0;
+	padding: 0;
+	box-sizing: border-box;
+}
+
+body {
+	background-color: #F1EEDB;
+	font-family: Arial, sans-serif;
+
+}
+
+main {
+
+	padding-left: 225px;
+	padding-right: 100px;
+}
+
+h1 {
+	margin: 30px 0;
+	color: #584d5e; 
+	font-family: Lato;
+	text-align: center;
+}
+
+h2 {
+	margin: 20px 0;
+	color: #584d5e; 
+	font-family: Lato;
+	text-align: center;
+	border-bottom: 1.5px solid #584d5e;
+	padding-bottom: 10px;
+}
+
+p {
+	margin: 10px 0;
+	color: #220730;
+}
+
+ol li {
+	margin: 10px 40px;
+	color: #220730;
+}
+
+.wrapper .sidebar {
+
+	background: #F1EEDB;
+	position: fixed;
+	top: 0;
+	left: 0;
+	width: 205px;
+	height: 100%;
+	padding: 20px 0;
+	
+
+}
+
+.h2_sidebar {
+	margin: 20px 26px;
+	color: #584d5e; 
+	font-family: Lato;
+	text-align: left;
+}
+
+.wrapper .sidebar .ac_logo img{
+	position: absolute;
+	display: block;
+	height: 80px;
+	margin: 15px;
+	bottom: 0px;
+	left: 15px;
+
+}
+
+.wrapper .sidebar .sg_logo img{
+	position: absolute;
+	display: block;
+	height: 80px;
+	bottom: 120px;
+	left: 15px;
+}
+
+.wrapper .sidebar ul li a{
+
+	display: block;
+	padding: 13px 30px;
+	border-bottom: 1 px solid #A39AAC;
+	color: #3C1053; 
+	font-size: 20px;
+	position: relative;
+	font-family: Lato;
+	font-weight: 500;
+}
+
+.wrapper .sidebar ul li a:hover,
+.wrapper .sidebar ul li a:active{
+	color: #461D7C;
+	background: #F1EEDB;
+	border-right: 2px solid #3C1053;
+}
+
+.link_button {
+  font: bold 11px Arial;
+  text-decoration: none;
+  background-color: #EEEEEE;
+  color: #333333;
+  padding: 2px 6px 2px 6px;
+  border-top: 1px solid #CCCCCC;
+  border-right: 1px solid #333333;
+  border-bottom: 1px solid #333333;
+  border-left: 1px solid #CCCCCC;
+}

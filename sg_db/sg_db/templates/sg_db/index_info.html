@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+
+{% block main %}
+
+<title> Index </title>
+
+<main>
+	<h1> Overview </h1>
+
+	<p> 
+	Under-construction: internal website to host breeding program tools for the LSU AgCenter wheat breeding program. It is intended as a relatively barebones internal site for various front-end applications that hook into a shared SQLlite DB hosting information on germplasm (in plots and seedlots) at various stages of the breeding program.
+	</p>
+
+	<h2> Rationale</h2>
+	
+	<p>In breeding databases, the base unit is generally the accession (also called genotype, designation, line, cultivar, etc.). In practice, the accession is a population of individuals that are assumed to be homogenous (and in practice, have much less within-accession genetic heterogeneity than that between populations). This assumption allows metadata to be stored for that accession, and allows a single accession to be replicated across many plots for phenotyping and/or seed increase. We can call the stages of the breeding program after the development of fixed accessions the "line testing" portion of the breeding program.</p>
+
+	<p>These accessions or lines come out of a series of subsequent nurseries (the "line generation" portion of the breeding program). With these nurseries, we are generally working with nested families, whose structure derives from repeated re-selections out of inbreeding bulk populations that become progressively less heterogenous and heterozygous with each cycle of selection. Factors that distinguish this line generation pipeline from the line advancement pipeline are:</p>
+
+	<ol>
+	<li> <b> Lack of replication. </b> Generally, a bulk population will consist of a set of individuals genetically distinct from a sepearate bulk planted from the samee set, and very distinct from a bulk geenrated from the initial bulk through inbreeding. Every "accession" -- treating a bulk with a single id -- exists only once as seed is allocated and planted. </li>
+	<li> <b> Accession generation. </b> By that same token, the harvesting of seed from a bulk plot will <i> generate </i> new accessions. A bulk of a bulk will be a new (more homozygous) bulk, while the selection of fifty heads from a bulk will generate fifty new accessions.
+	<li> <b> Nested families </b> A series of new accessions generated from a previous accession will be more similar to each other than each will be to a seperate set of new accessions generated from a separate accession. </li>
+	<li> <b> Heterozygosity and heterogeneity </b> Breeders use the "F" notation to denote and track the heterozygosity and heterogeneity in bulks. An F<sub>i:j</sub> carries information on heterogeneity in <i>i</i>, denoting the last inbreeding generation at which a single plant was selected to generate the accession, and carries information on heterozygosity in <i>j</i>, denoting the current inbreeding generation and thus the expectation of genome-wide heterozygosity. </li>
+	<li> <b> Temporary phenotypes </b> No phenotypes need be recorded on bulk accessions. They are not being replicated, so we have no need to average across records by the levels of accession. Phenotypes for disease, maturity, or habit (all fairly repeatable in single rep plots) are used to remove individuals from the population, at which point they are dead and we no longer care about keeping track of them. Lines that continue are assumed to have "acceptable" phenotypes by whatever criteria are used and whatever traits manifest in that given year and experiment due to the realized biotic and abiotic conditions. (The exception to this is a rating of "appearance", which I'm going to try to keep track of a bit for my own personal interest and use a little in the final stage of evaluation, but isn't strictly necessary.)	</li>
+	</ol>
+	
+	<p>Despite these complications, we still need to keep track of where and what these bulks are. We need to keep track of crosses and which bulks came out of which crosses. Generally, we need to know where we planted what in the field, and what their relationships are to known lines and other bulks in that field. We need to use that information to allow breeders to make selections of what to advance. Given those selections, we need to harvest an appropriate amount as seed stocks. We need to keep track of that same information for those seed stocks. Then we need to track where those seed stocks will physically be located and where they're eventually planted. </p>
+
+	<h2> General Structure </h2>
+
+	<p>This is what I'm currently thinking of in terms of structuring this thing. In general, germplasm lives in two forms. It exists as seed (a seed lot), which can be used to generate adult plants. When all or a portion of a seed lot is planted to generate plants, in a greenhouse or in the field, we can term that collection of plants and environment a plot. The plants within each plot can be used to generate one or more seed lots. </p>
+
+	<p> ---&gt; Plot -------&gt; Seed -------&gt; Plot ----</p>
+
+	<p>In our database schema, we will try to have a table that keeps track of plots, and a table that keeps track of seed. Nursery-specific tools filter each table to generate a subset for that nursery, modify it, and move it into a temporary table. After harvested seed has been weighed, the entries in the temporary seed lot table will be moved into the permanent table and cleared. After plots have been planted and have emerged, the entries in the temporary plot table will be moved into the permanent table and clared. These tables will grow over the years. Each will maintain a record of their source, allowing for the "unfolding" of a specific accession's route through the two tables. </p>
+
+	<h2> Crossing </h2>
+
+	<p> All seed stocks and plants have their origin in the set of lines planted annually in the greenhouse for crossing (the crossing block or 'WCP'), and the discrete pairwise crossing events generated while those greenhouse plants are flwoering. The crossing sections of the site are composed of three related tables coupled with a shiny webapp to guide crossing decisions in the greenhouse. The tables are ordered sequentially: </p>
+	<ol>
+		<li> <b> WCP Entries </b> The wheat crossing plot entry table consists of the entries vernalized and transplanted into the greenhouse within a given year. There are four main categories of lines: A, elite crossing lines, B, additional crossing lines, G, germplasm development lines (usually lines carrying novel or rare genes), and T, F1 lines for topcrossing (from seed generated in the previous year's crosses. After finalizing, the line names, pedigrees, and FullSampleIds (if available) are downloaded as a csv. This csv is used as a scaffold to add in modeling/gene content information in R and to generate a three-column table that containing information on the merit of all potential crosses as pairwise combinations of WCP entries. (I will want to do this differently each year :)) </li>
+		<li> <b> Crossing Table </b> The crossing table contains crossing "targets" -- these are records of emasculations and pollinations made in the greenhouse, that haven't necessarily set seed/been inventoried. This table isn't deleted, but contains a status column that is used to filter lines. As crosses get taken down,approximate seed number is recorded, at which point the status changes and en entry is created in the family table.</li> 
+		<li> <b> Family Table </b> The family table contains information on the family -- pedigree, any notes collected over the years, etc. It contains a column for the ID of the crossing table entry the family table entry was generated from. Family IDs are generated sequentially based on the crossing timestamps once crosses are recorded as having set seed (so has to be timestamp of the recording of seed information?). </li>
+
+	</ol>
+
+	<p> The crossing app does not SUBMIT data at any point. It reads the WCP entry table, to confirm the lines and get information on notes, Id, etc. It scans the crossing table to mark lines that are in-progress targets and confirmed. It has a submission form for the three-column file containing merit information on all potential crosses generated by ND outside of the site. Physical inventorying of which targets are made and which targets set seed is performed with the intercross app, which generates a CSV that will be uploaded to the DB through the appropriate web page. </p>
+
+	<h2> Nursery Generation </h2>
+
+	<p> Bulk nurseries are proceduarlly generated from seedlots based on marking of seedlots for planting (based on inventory and post-harvest selections) and the generation. So a file for this year's F3:4 nursery can be generated based on F3 seedlot quantities (in this case, heads per) and the known structure of the F3:4 nursery. Columns associated with "map" information -- how the plots or cuts actually end up in the field -- will be merged in from a separate table (trial table), manually edited as planting season progresses. Trial table will also contain information on planting and harvest dates. Not all of our e.g. headrows will live in this database I think -- just the 90%+ that represent the mainline of the breeding program.  </p> 
+
+	<h2> Seed Lot Tracking </h2>
+
+	<p> Seed lots are created from harvest lists. A seed lot row represents a bag with a barcode carried into the field for harvest. A seed lot may never actually end up being harvested -- in which case it will forever have a value of 0 weight. We can figure out the inventorying based on density -- a region may have a certain % missed, but big stretches of all missing mean that we haven't inventoried that section. Seed lot info scanned in during threshing via the barcode on the bag associated with a row in the seed lot table. </p> 
+
+	<p> Should the seed lot data also pull in seed count information from the crosses table? Or should they be separate systems entirely? <p>
+</main>
+{% endblock %}

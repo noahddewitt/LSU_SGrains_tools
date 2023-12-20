@@ -1,0 +1,20 @@
+{% extends "base.html" %} 
+
+{% block main %}
+
+<main>
+
+<h2> Cross Detail </h2>
+
+{% block crosses %}
+
+<h3> {{ cross.cross_text }} </h3>
+
+<u1> Parents: {{ cross.parent_one }} / {{ cross.parent_two }} </u1> <br / >
+<u1> Crosser: {{ cross.crosser_text }} </u1>
+
+</main>
+
+{% endblock %}
+
+{% endblock %}

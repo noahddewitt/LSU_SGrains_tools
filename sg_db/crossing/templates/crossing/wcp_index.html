@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+{% extends "base.html" %}  
+
+{% load render_table from django_tables2 %}
+
+{% block main %} 
+
+<head>
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" />
+</head>
+
+<main>
+	<h2> Crossing Block Entries </h2>
+
+	<form 
+	    action="/crossing/entries"
+	    enctype="multipart/form-data"
+	    method="post"
+	>
+	    {% csrf_token %}
+	    {{ upload_form }} 
+	    <input type="submit" name = 'upload_files' value = "Submit">
+	</form>
+
+	<br> 
+	<b> Entry List CSV: </b> 
+	<form style="display: inline" action="/crossing/export/csv/WCP_Entries" method="get">
+  		<button>Download</button>
+	</form> 
+	&nbsp
+	<form
+		action="/crossing/entries"
+		enctype="multipart/form-data"
+		method="post"
+	>
+		{% csrf_token %}
+		{{ print_form }}
+		<input type ='submit' name = 'download_labels' value = 'Download'>
+	</form>
+	<br>
+	<hr>
+	{% render_table table %}
+</main>
+
+{% endblock %} 

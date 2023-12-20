@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+
+<html lang="en-US">
+
+{% load static %}
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width" />
+
+<link rel="stylesheet" href={% static 'sg_db/css/base_style.css' %}>
+
+
+</head>
+
+<body>
+
+<div class="wrapper">
+	<div class="sidebar">
+		<h2 class="h2_sidebar" > LSU Wheat   Breeding </h2>
+		<ul>
+			<li> 
+				<a href="/"> Overview </a>
+			</li>
+			<li> 
+				<a href="http://sgbreedbase.agcenter.lsu.edu"> Breedbase </a>
+			</li>
+			<li> 
+				<a href="/crossing_shiny"> Crossing App </a>
+			</li>
+			<li> 
+				<a href="/crossing"> Crosses Made </a>
+			</li>
+			<li> 
+				<a href="/crossing/entries"> Crossing Block </a>
+			</li>
+			<li> 
+				<a href="/"> Nursery View </a>
+			</li>
+			<li> 
+				<a href="/"> Seedlot View </a>
+			</li>
+			<li> 
+				<a href="/"> Nursery Design </a>
+			</li>
+		</ul>
+			<div class="ac_logo">
+				<img src="{% static 'sg_db/media/agcenter.png' %}" alt="agcenter_logo">
+			</div>
+			<div class="sg_logo">
+				<img src="{% static 'sg_db/media/SungrainsLarge.gif' %}" alt="sungrains_logo">
+			</div>
+	</div>
+</div>
+
+<body>
+
+	{% block main %} {% endblock %}
+
+</body>
+
+</html>
