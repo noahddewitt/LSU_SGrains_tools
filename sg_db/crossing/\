@@ -55,7 +55,6 @@ def crossesView(request):
 
             crossTime =  datetime.strptime(row['timestamp'], "%Y-%m-%d_%H_%M_%S_%f")
 
-            #UPDATE -- I think this needs to go - intercross will read in WCP_IDs
             #Okay, so I want to use human-readable desigs, but store data as Ids.
             #So I'll have to go through and get the Ids here.
             parent_one_str = WCP_Entries.objects.get(year_text = "2024", desig_text = row['femaleObsUnitDbId']).wcp_id
@@ -81,6 +80,8 @@ def crossesView(request):
 
                 if form.is_valid():
                     form.save()
+                else: 
+                    print(form.errors)
 
         return render(request, "crossing/crosses_index.html", {'table': table, "form": UploadCrossesForm()})
 
@@ -93,7 +94,10 @@ def lblView(request):
         row_list = []
         for row in csv.DictReader(rows):
            row_list.append(row)
-        return(export_labels(request, "CSV", include_barcode = False, times_to_print = 1, csv_file = row_list))
+        print(row_list)
+        export_labels(request, "CSV", times_to_print = 2, csv_file = row_list)
+
+        return render(request, "crossing/labels.html", {"label_form": UploadLabelsForm()})
 
 
 def detail(request, cross_id):
@@ -128,20 +132,19 @@ def export_csv(request, requested_model):
 
     return response
 
-#I think this needs to be moved to its own page with options to print from model or upload csv
-def export_labels(request, requested_model, include_barcode = True, 
-                  include_date = True, times_to_print = 1, csv_file = None):
+#I did have this as a seperate url-based thing, but now I'm just calling it directly...
+def export_labels(request, requested_model, include_barcode = True, times_to_print = 1, csv_file = None):
     response = HttpResponse(content_type = 'text/plain')
 
     if requested_model == "WCP_Entries":
         cur_model = WCP_Entries
     elif requested_model == "Crosses":
         cur_model = Crosses
+    #elif requested_model == "CSV":
+     #   cur_model = csv_file
 
-    file_date_string = date.today().strftime("%b%d%y")
-    labl_date_string = date.today().strftime("%m/%d/%Y")
-
-    file_name = requested_model + "_lbls_" + file_date_string + ".zpl"
+    date_string = date.today().strftime("%b%d%y")
+    file_name = requested_model + "_lbls_" + date_string + ".zpl"
     response['Content-Disposition'] = 'attachment; filename="' + file_name +  '"'
     
     if requested_model != "CSV":
@@ -152,28 +155,24 @@ def export_labels(request, requested_model, include_barcode = True,
     for row_item in row_items:
         if requested_model == "CSV":
             row_item = [row_item['id'], row_item['row_1'], row_item['row_2']]
-            second_row_text = ""
-        elif rqeuested_model == "WCP_Entries":
-            second_row_text = "Group"
-        else:
-            second_row_text = ""
-
+            print(row_item)
         for _ in range(times_to_print):
             response.write("^XA\n")
             response.write("^CF0,40\n")
             response.write("^FO10,5^GB490,3,3^FS\n")
-            if requested_model in ["WCP_Entries", "CSV"]:
+            if requested_model == "WCP_Entries":
+                print(row_item[0])
                 response.write("^FO15,35^FD" + row_item[0] + "^FS\n")
                 response.write("^CF0,20\n")
-                response.write("^FO16,90^FD" + row_item[1] + "^FS\n")
-                response.write("^FO16,125^FD" + second_row_text + row_item[2] + "^FS\n")
-                if include_date == True:
-                    response.write("^FO16,160^FD" + labl_date_string + "^FS\n")
+                response.write("^FO16,100^FD" + row_item[1] + "^FS\n")
+                print(row_item[1])
+                response.write("^FO16,150^FD" + "Group: " + row_item[2] + "^FS\n")
                 if include_barcode == True:
                     response.write("^FO320,20^BQN,2,7,Q,7^FDQA," + row_item[0] + "^FS\n")
             response.write("^FO10, 195^GB490,3,3^FS\n")
             response.write("^XZ\n")
 
+    print(response) 
     return response
 
 

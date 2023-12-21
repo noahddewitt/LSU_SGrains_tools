@@ -21,6 +21,9 @@ class UploadCrossesForm(Form):
     Crosses_File = FileField()
 
 
+class UploadLabelsForm(Form):
+    Labels_File = FileField()
+
 class TimesToPrintForm(Form):
     Times_To_Print = IntegerField(label = 'Entry List Labels: ', initial = '1')
     Times_To_Print.widget.attrs.update({'style': 'width:5ch',

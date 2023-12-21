@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+{% extends "base.html" %}  
+
+{% block main %} 
+
+
+<main>
+	<h2> Generate Labels </h2>
+
+	<form 
+	    action="/crossing/labels"
+	    enctype="multipart/form-data"
+	    method="post"
+	>
+	    {% csrf_token %}
+	    {{ label_form }} 
+	    <input type="submit" name = 'upload_files' value = "Submit">
+	</form>
+</main>
+
+{% endblock %} 
