@@ -1,41 +1,44 @@
 <div class="table-tools-wrapper">
 
-	<form
-			action="/crossing/entries"
-			enctype="multipart/form-data"
-			method="post"
-			>
-			{% csrf_token %}
-			{{ upload_form }}
-			<input type="submit" name = 'upload_files' value = "Submit">
+	<label for = "filter-box"
+	       class = "filter-box"> Search table: </label>
+	<input type = "search"
+	       class = "filter-box"
+	       name = "filter"
+	       id = "filter-box"
+	       placeholder = "Filter..."
+	       hx-get="{% url 'crossing:entries_table_view' %}"
+	       hx-trigger="keyup delay:500ms, changed, search"
+	       hx-target="div.table-container"
+	       hx-swap="outerHTML">
+
+	<div hx-get="{% url 'crossing:entries_table_view' %}" hx-trigger="load" hx-swap="outerHTML">
+		Error loading table!
+	</div>
+
+	<form style="display: inline" action="/crossing/export/csv/WCP_Entries" method="get">
+		<button>Download CSV</button>
 	</form>
 
+	<form action="/crossing/entries"
+	      enctype="multipart/form-data"
+	      method="post">
+	      {% csrf_token %}
+	      {{ upload_form }}
+		      <input type = "submit"
+		     class = 'button'
+	             name = 'upload_files'
+		     value = "Submit">
+	</form>
 
-
-		<br>
-		<b> Entry List CSV: </b>
-		<form style="display: inline" action="/crossing/export/csv/WCP_Entries" method="get">
-			<button>Download</button>
-		</form>
-		&nbsp
-		<form
-				action="/crossing/entries"
-				enctype="multipart/form-data"
-				method="post"
-				>
-				{% csrf_token %}
-				{{ print_form }}
-				<input type ='submit' name = 'download_labels' value = 'Download'>
-		</form>
-
-			<input type = "search"
-			       name = "filter"
-			       placeholder = "Filter..."
-			       hx-get="{% url 'crossing:entries_table_view' %}"
-			       hx-trigger="keyup delay:500ms, changed, search"
-			       hx-target="div.table-container"
-			       hx-swap="outerHTML">
-			<div hx-get="{% url 'crossing:entries_table_view' %}" hx-trigger="load" hx-swap="outerHTML">
-				Loading table!
-			</div>
+	<form action="/crossing/entries"
+	      enctype="multipart/form-data"
+	      method="post">
+		{% csrf_token %}
+		{{ print_form }}
+		<input type ='submit' 
+		       class = 'button'
+		       name = 'download_labels' 
+		       value = 'Download'>
+	</form>
 </div>

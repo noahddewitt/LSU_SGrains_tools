@@ -1,7 +1,11 @@
 <div class="table-tools-wrapper">
 
     <div class="entry-title">
-	    <h3> <span> {{ entry }} : {{ entry.desig }} </span> </h3>
+	 {% if  entry.desig_text is None  %}
+	    <h3> <span> {{ entry.pk }} </span> </h3>
+	 {% else %}
+	    <h3> <span> {{ entry.pk }} : {{ entry.desig_text }} </span> </h3>
+	 {% endif %}
     </div>
 
 <form hx-put="{% url 'crossing:entry_detail' entry.pk %}"
@@ -11,6 +15,7 @@
       <div class = "row">
 	<div class = "column">
 	{% for field in form %}
+	{# Need to change this so half of form length #}
 	  {% if forloop.counter0 == 5 %}
 	    </div>
 	    <div class = "column">

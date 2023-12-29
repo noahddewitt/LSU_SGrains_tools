@@ -9,5 +9,5 @@ class crossesTable(tables.Table):
 class wcpTable(tables.Table):
     class Meta:
         model = WCP_Entries
-        exclude = ("sample_id_text", )
+        exclude = ("year_text", "sample_id_text", )
 

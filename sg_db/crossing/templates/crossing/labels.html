@@ -13,8 +13,17 @@
 	    method="post"
 	>
 	    {% csrf_token %}
-	    {{ label_form }} 
-	    <input type="submit" name = 'upload_files' value = "Submit">
+	    
+	    {% for field in label_form %} 
+
+		<h3 class="detail_header"> {{field.label_tag}} </h3>
+		<p class="detail_info"> {{ field }} </p>
+
+	    {% endfor %}
+	    <input type="submit" 
+		   class='button'
+	           name = 'upload_files' 
+		   value = "Submit">
 	</form>
 </main>
 

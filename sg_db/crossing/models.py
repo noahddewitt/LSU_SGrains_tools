@@ -38,8 +38,11 @@ class Crosses(models.Model):
 
 
 class Families(models.Model):
-    family_text = models.CharField(max_length=200, primary_key = True)
-    cross_text = models.ForeignKey(Crosses, on_delete = models.PROTECT, related_name = 'cross')
+    family_id = models.CharField(max_length=200, primary_key = True, verbose_name = "Family")
+    purdy_text = models.CharField(max_length=500, verbose_name = "Purdy Pedigree")
+    genes_text = models.CharField(max_length=500, verbose_name = "Genes")
+    notes_text = models.CharField(max_length=10000, verbose_name = "Notes")
+    cross_text = models.ForeignKey(Crosses, on_delete = models.PROTECT, related_name = 'cross', verbose_name = "Cross Id")
 
     def __str__(self):
         return self.cross_text

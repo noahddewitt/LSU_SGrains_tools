@@ -54,7 +54,7 @@ def wcpTableView(request):
             Q(notes_text__icontains=query_str)))
     else:
         table = wcpTable(WCP_Entries.objects.all())
-    tables.config.RequestConfig(request, paginate={"per_page": 20}).configure(table)
+    tables.config.RequestConfig(request, paginate={"per_page": 15}).configure(table)
     return render(request, 'crossing/display_table.html', {"table" : table}) 
 
 def crossesView(request):
@@ -116,7 +116,7 @@ def crossesTableView(request):
             Q(status_text__icontains=query_str)))
     else:
         table = crossesTable(Crosses.objects.all())
-    tables.config.RequestConfig(request, paginate={"per_page": 20}).configure(table)
+    tables.config.RequestConfig(request, paginate={"per_page": 15}).configure(table)
     print(table)
     return render(request, 'crossing/display_table.html', {"table" : table}) 
 

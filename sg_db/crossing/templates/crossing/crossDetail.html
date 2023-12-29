@@ -18,14 +18,34 @@
   </div>
   <div class="row">
     <div class="column">
-      <div class="entry-title">
-	<h3> <span> {{ entry.parent_one }} </span></h3>
-      </div>
+       <div class="entry-title">
+	       <h3> <span> {{ entry.parent_one }} </span></h3>
+       </div>
+       <h3> Pedigree </h3>
+       {{ entry.parent_one.purdy_text }}
+       <h3> WCP Year and Group </h3>
+       {{ entry.parent_one.wcp_id }} - {{ entry.parent_two.cp_group_text }}
+       <h3> Genes </h3>
+       {{ entry.parent_one.genes_text }}
+       <h3> Notes </h3>
+       {{ entry.parent_one.notes_text }}
+       <h3> Genotype Sample Id </h3>
+       {{ entry.parent_one.sample_id_text }}
     </div>
     <div class="column">
        <div class="entry-title">
-	<h3> <span> {{ entry.parent_two }} </span></h3>
+	       <h3> <span> {{ entry.parent_two }} </span></h3>
        </div>
+       <h3> Pedigree </h3>
+       {{ entry.parent_two.purdy_text }}
+       <h3> WCP Year and Group </h3>
+       {{ entry.parent_two.wcp_id }} - {{ entry.parent_two.cp_group_text }}
+       <h3> Genes </h3>
+       {{ entry.parent_two.genes_text }}
+       <h3> Notes </h3>
+       {{ entry.parent_two.notes_text }}
+       <h3> Genotype Sample Id </h3>
+       {{ entry.parent_two.sample_id_text }}
     </div>
   </div>
 	
