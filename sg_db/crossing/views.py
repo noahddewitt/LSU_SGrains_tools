@@ -1,5 +1,6 @@
 import django_tables2 as tables
 import csv
+import re
 
 from datetime import date, datetime
 from io import TextIOWrapper
@@ -7,24 +8,23 @@ from functools import reduce
 
 from django.shortcuts import get_object_or_404, render
 
-from django.http import HttpResponse, QueryDict
+from django.http import HttpResponse, QueryDict, HttpResponseNotFound
 from django.template import loader, RequestContext
 from django.db.models import Q
 
 from .models import WCP_Entries, Crosses
-from .tables import CrossingTable, WCPTable, TableTest
+from .tables import crossesTable, wcpTable
 from .forms import WCPEntryForm, UploadWCPForm, CrossesEntryForm, UploadCrossesForm, TimesToPrintForm, UploadLabelsForm
 
 from django.views.generic.base import View
 
 
-
 def wcpView(request):
-    table = WCPTable(WCP_Entries.objects.all())
-    tables.config.RequestConfig(request).configure(table)
+    #table = WCPTable(WCP_Entries.objects.all())
+    #tables.config.RequestConfig(request).configure(table)
 
     if request.method == 'GET':
-        return render(request, "crossing/wcp_index.html", {'table': table, 'upload_form': UploadWCPForm(), 'print_form': TimesToPrintForm()})
+        return render(request, "crossing/wcp_index.html", {'upload_form': UploadWCPForm(), 'print_form': TimesToPrintForm()})
     elif request.method == 'POST':
         if 'upload_files' in request.POST: #I'm not 100% sure why this works
             WCP_Entries_File = request.FILES["WCP_Entries_File"]
@@ -33,7 +33,7 @@ def wcpView(request):
                 form = WCPEntryForm(row)
                 form.save()
 
-            return render(request, "crossing/upload_WCP_Entries.html", {'table': table, "upload_form": UploadWCPForm(), 'print_form': print_form})
+            return render(request, "crossing/upload_WCP_Entries.html", {"upload_form": UploadWCPForm(), 'print_form': print_form})
         elif 'download_labels' in request.POST:
             print_form = TimesToPrintForm(request.POST)
             if print_form.is_valid():
@@ -44,23 +44,20 @@ def wcpTableView(request):
     if 'filter' in request.GET.keys():
         query_str = request.GET['filter']
         print(query_str)
-        table = TableTest(WCP_Entries.objects.filter(
+        table = wcpTable(WCP_Entries.objects.filter(
             Q(wcp_id__icontains=query_str) | 
             Q(desig_text__icontains=query_str) |
             Q(purdy_text__icontains=query_str) |
             Q(genes_text__icontains=query_str) |
             Q(notes_text__icontains=query_str)))
     else:
-        table = TableTest(WCP_Entries.objects.all())
+        table = wcpTable(WCP_Entries.objects.all())
     tables.config.RequestConfig(request, paginate={"per_page": 20}).configure(table)
-    return render(request, 'crossing/wcp_table.html', {"table" : table}) 
+    return render(request, 'crossing/display_table.html', {"table" : table}) 
 
 def crossesView(request):
-    table = CrossingTable(Crosses.objects.all())
-    tables.config.RequestConfig(request).configure(table)
-
     if request.method == 'GET':
-        return render(request, "crossing/crosses_index.html", {'table': table, "form": UploadCrossesForm()})
+        return render(request, "crossing/crosses_index.html", {"form": UploadCrossesForm()})
     elif request.method == 'POST':
         Crosses_File = request.FILES["Crosses_File"]
         rows = TextIOWrapper(Crosses_File, encoding="utf-8", newline="")
@@ -100,7 +97,24 @@ def crossesView(request):
                 if form.is_valid():
                     form.save()
 
-        return render(request, "crossing/crosses_index.html", {'table': table, "form": UploadCrossesForm()})
+        return render(request, "crossing/crosses_index.html", {"form": UploadCrossesForm()})
+
+def crossesTableView(request):
+    if 'filter' in request.GET.keys():
+        query_str = request.GET['filter']
+        print(query_str)
+        table = crossesTable(Crosses.objects.filter(
+            Q(cross_id__icontains=query_str) | 
+            Q(parent_one__desig_text__icontains=query_str) |
+            Q(parent_two__desig_text__icontains=query_str) |
+            Q(crosser_text__icontains=query_str) |
+            Q(status_text__icontains=query_str)))
+    else:
+        table = crossesTable(Crosses.objects.all())
+    tables.config.RequestConfig(request, paginate={"per_page": 20}).configure(table)
+    print(table)
+    return render(request, 'crossing/display_table.html', {"table" : table}) 
+
 
 def lblView(request):
     if request.method == 'GET':
@@ -114,25 +128,59 @@ def lblView(request):
         return(export_labels(request, "CSV", include_barcode = False, times_to_print = 1, csv_file = row_list))
 
 
-def entryDetail(request, wcp_id):
-    entry = get_object_or_404(WCP_Entries, pk = wcp_id)
+def entryDetail(request, id_str):
+    if re.match(r'^WCP', id_str):
+        curModel = WCP_Entries
+        curForm = WCPEntryForm
+        htmlPath = "crossing/entryDetail.html"
+    elif re.match(r'^T', id_str):
+        curModel = Crosses
+        curForm = CrossesEntryForm
+        htmlPath = "crossing/crossDetail.html"
+    elif re.match(r'^LA', id_str):
+        #Change this later to go to families table
+        curModel = Crosses
+        curForm = CrossesEntryForm
+        htmlPath = "crossing/crossDetail.html"
+    else:
+        print(id_str)
+        return HttpResponseNotFound(id_str)
+
+    entry = get_object_or_404(curModel, pk = id_str)
+
     if request.method == 'GET':
-        return render(request, "crossing/entryDetail.html", {"entry": entry})
+        return render(request, htmlPath, {"entry": entry})
     elif request.method == 'PUT':
         data = QueryDict(request.body).dict()
-        form = WCPEntryForm(data, instance = entry)
+        form = curForm(data, instance = entry)
         if form.is_valid():
             form.save()
-        return render(request, "crossing/entryDetail.html", {"entry": entry})
+        return render(request, htmlPath, {"entry": entry})
 
-def entryEditForm(request, wcp_id):
-    entry = get_object_or_404(WCP_Entries, pk = wcp_id)
-    form = WCPEntryForm(instance = entry)
+def entryEditForm(request, id_str):
+
+    if re.match(r'^WCP', id_str):
+        curModel = WCP_Entries
+        curForm = WCPEntryForm
+    elif re.match(r'^T', id_str):
+        curModel = Crosses
+        curForm = CrossesEntryForm
+    elif re.match(r'^LA', id_str):
+        #Change this later to go to families table
+        print("oh hell...")
+        curModel = Crosses
+        curForm = CrossesEntryForm
+    else:
+        print(id_str)
+        return HttpResponseNotFound(id_str)
+
+    entry = get_object_or_404(curModel, pk = id_str)
+    form = curForm(instance = entry)
     return render(request, "crossing/entryEdit.html", {"entry": entry, "form": form})
 
-def crossDetail(request, cross_id):
-    cross = get_object_or_404(Crosses, pk = cross_id)
-    return render(request, "crossing/crossDetail.html", {"cross": cross})
+#def crossDetail(request, cross_id):
+#    cross = get_object_or_404(Crosses, pk = cross_id)
+#    return render(request, "crossing/crossDetail.html", {"cross": cross})
 
 def export_csv(request, requested_model):
     response = HttpResponse(content_type='text/csv')

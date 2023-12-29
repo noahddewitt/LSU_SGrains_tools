@@ -1,20 +1,40 @@
-{% extends "base.html" %} 
+{% load django_tables2 %}
+<div class="table-container">
+  <div class="entry-title">
+	<h3> <span> {{ entry.cross_id }} </span></h3>
+  </div>
+  <div class="row">
+    <div class="column">
+	<h3> Status </h3>
+	<p class="detail_info"> {{entry.status_text}} </p>
+	<h3> Crosser </h3>
+	<p class="detail_info"> {{ entry.crosser_text }} </p> 
+    </div>
+    <div class="column">
+	<h3> Seed </h3>
+	<p class="detail_info"> {{entry.seed_int}} </p>
+	<h3> Cross Date </h3>
+	<p class="detail_info"> {{ entry.cross_date }} </p> 
+    </div>
+  </div>
+  <div class="row">
+    <div class="column">
+      <div class="entry-title">
+	<h3> <span> {{ entry.parent_one }} </span></h3>
+      </div>
+    </div>
+    <div class="column">
+       <div class="entry-title">
+	<h3> <span> {{ entry.parent_two }} </span></h3>
+       </div>
+    </div>
+  </div>
+	
+	<button hx-get="{% url 'crossing:crosses_table_view' %}"
+		hx-target="div.table-container"
+		hx-swap="outerHTML">Return</button>
 
-{% block main %}
-
-<main>
-
-<h2> Cross Detail </h2>
-
-{% block crosses %}
-
-<h3> {{ cross.cross_text }} </h3>
-
-<u1> Parents: {{ cross.parent_one }} / {{ cross.parent_two }} </u1> <br / >
-<u1> Crosser: {{ cross.crosser_text }} </u1>
-
-</main>
-
-{% endblock %}
-
-{% endblock %}
+	<button hx-get="{% url 'crossing:entry_edit_form' entry.pk  %}"
+		hx-target="div.table-container"
+		> Edit </button>
+</div>

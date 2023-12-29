@@ -19,8 +19,13 @@ class CrossesEntryForm(ModelForm):
                   "crosser_text", "status_text", "seed_int"]
 
 class UploadCrossesForm(Form):
-    Crosses_File = FileField()
+    Crosses_File = FileField(label = '')
 
+    #Allows for modifying field attributes
+    def __init__(self, *args, **kwargs):
+        super(UploadCrossesForm, self).__init__(*args, **kwargs)
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'file-upload'
 
 class UploadLabelsForm(Form):
     Labels_File = FileField()

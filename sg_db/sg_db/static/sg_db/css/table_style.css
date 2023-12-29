@@ -1,7 +1,8 @@
 .table {
 	width: 81vw;
 	border-collapse: collapse;
-	box-shadow: 10px 5px 5px rgba(0, 0, 0, 0.1);
+	box-shadow: 8px 5px 5px rgba(88, 77, 94, 0.1);
+	margin-bottom: 15px;
 }
 
 
@@ -19,10 +20,10 @@
 }
 
 .table th:first-of-type {
-  border-top-left-radius: 6px;
+  border-top-left-radius: 4px;
 }
 .table th:last-of-type {
-  border-top-right-radius: 6px;
+  border-top-right-radius: 4px;
 }
 
 
@@ -50,7 +51,7 @@
 	text-align: center;
 	background-color: #C2B0D4;
 	align-content: center;
-	border-radius: 6px;
+	border-radius: 4px;
 	cursor: pointer;
 }
 
@@ -69,3 +70,5 @@
 .page-btn-middle {
 	font-size:large;
 }
+
+

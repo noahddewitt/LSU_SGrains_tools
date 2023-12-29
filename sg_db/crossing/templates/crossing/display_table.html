@@ -35,7 +35,7 @@
         <tbody {{ table.attrs.tbody.as_html }} >
         {% for row in table.paginated_rows %}
 	  {% block table.tbody.row %}
-	  <tr hx-get= "/crossing/{{ row.cells.wcp_id }}"
+	  <tr hx-get= "/crossing/{{ row.cells | first }}"
 		      hx-trigger="click"
 		      hx-target="div.table-container"
 		      hx-swap="outerHTML"
@@ -61,8 +61,8 @@
   {% endblock table %}
 
 {% block pagination %}
+{% if table.page and table.paginator.num_pages > 1 %}
 <div class="pagination">
-  {% if table.page and table.paginator.num_pages > 1 %}
     <a class="page-btn-left"
        {% if table.page.has_previous %}
        hx-get="{{ request.path_info }}{% querystring table.prefixed_page_field=table.page.previous_page_number %}"

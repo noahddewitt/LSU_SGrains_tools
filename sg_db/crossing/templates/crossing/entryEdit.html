@@ -1,7 +1,7 @@
 <div class="table-container">
 
     <div class="entry-title">
-	    <h3> <span> {{ entry.wcp_id }} : {{ entry.desig_text }} </span> </h3>
+	    <h3> <span> {{ entry }} : {{ entry.desig }} </span> </h3>
     </div>
 
 <form hx-put="{% url 'crossing:entry_detail' entry.pk %}"

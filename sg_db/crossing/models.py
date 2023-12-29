@@ -21,13 +21,13 @@ class WCP_Entries(models.Model):
         return self.desig_text
 
 class Crosses(models.Model):
-    cross_id = models.CharField(max_length=200, primary_key = True)
-    parent_one = models.ForeignKey(WCP_Entries, on_delete = models.PROTECT,related_name = 'parent_one')
-    parent_two = models.ForeignKey(WCP_Entries, on_delete = models.PROTECT,related_name = 'parent_two')
-    cross_date = models.DateTimeField("Date Cross Made")
-    crosser_text = models.CharField(max_length = 10)
-    status_text = models.CharField(max_length = 10, default = "Made")
-    seed_int = models.IntegerField(default = 0)
+    cross_id = models.CharField(max_length=200, primary_key = True, verbose_name = "Cross Id")
+    parent_one = models.ForeignKey(WCP_Entries, on_delete = models.PROTECT,related_name = 'parent_one', verbose_name = "Parent One")
+    parent_two = models.ForeignKey(WCP_Entries, on_delete = models.PROTECT,related_name = 'parent_two', verbose_name = "Parent Two")
+    cross_date = models.DateTimeField(verbose_name = "Crossing Date")
+    crosser_text = models.CharField(max_length = 10, verbose_name = "Crosser")
+    status_text = models.CharField(max_length = 10, default = "Made", verbose_name = "Status")
+    seed_int = models.IntegerField(default = 0, verbose_name = "Seed")
 
     def __str__(self):
         return self.cross_id
