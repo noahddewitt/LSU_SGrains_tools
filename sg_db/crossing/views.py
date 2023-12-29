@@ -18,13 +18,15 @@ from .forms import WCPEntryForm, UploadWCPForm, CrossesEntryForm, UploadCrossesF
 
 from django.views.generic.base import View
 
-
 def wcpView(request):
+    return render(request, "crossing/wcp_index.html")
+
+def wcpWrapperView(request):
     #table = WCPTable(WCP_Entries.objects.all())
     #tables.config.RequestConfig(request).configure(table)
 
     if request.method == 'GET':
-        return render(request, "crossing/wcp_index.html", {'upload_form': UploadWCPForm(), 'print_form': TimesToPrintForm()})
+        return render(request, "crossing/wcp_table_wrapper.html", {'upload_form': UploadWCPForm(), 'print_form': TimesToPrintForm()})
     elif request.method == 'POST':
         if 'upload_files' in request.POST: #I'm not 100% sure why this works
             WCP_Entries_File = request.FILES["WCP_Entries_File"]
@@ -56,8 +58,11 @@ def wcpTableView(request):
     return render(request, 'crossing/display_table.html', {"table" : table}) 
 
 def crossesView(request):
+    return render(request, "crossing/crosses_index.html")
+
+def crossesWrapperView(request):
     if request.method == 'GET':
-        return render(request, "crossing/crosses_index.html", {"form": UploadCrossesForm()})
+        return render(request, "crossing/crosses_table_wrapper.html", {"form": UploadCrossesForm()})
     elif request.method == 'POST':
         Crosses_File = request.FILES["Crosses_File"]
         rows = TextIOWrapper(Crosses_File, encoding="utf-8", newline="")
@@ -97,7 +102,7 @@ def crossesView(request):
                 if form.is_valid():
                     form.save()
 
-        return render(request, "crossing/crosses_index.html", {"form": UploadCrossesForm()})
+        return render(request, "crossing/crosses_table_wrapper.html", {"form": UploadCrossesForm()})
 
 def crossesTableView(request):
     if 'filter' in request.GET.keys():

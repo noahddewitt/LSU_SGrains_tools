@@ -1,5 +1,4 @@
-{% load django_tables2 %}
-<div class="table-container">
+<div class="table-tools-wrapper">
   <div class="entry-title">
 	<h3> <span> {{ entry.wcp_id }} : {{ entry.desig_text }}</span></h3>
   </div>
@@ -27,11 +26,11 @@
   </div>
 	<br / >
 	
-	<button hx-get="{% url 'crossing:entries_table_view' %}"
-		hx-target="div.table-container"
+	<button hx-get="{% url 'crossing:entries_wrapper_view' %}"
+		hx-target="div.table-tools-wrapper"
 		hx-swap="outerHTML">Return</button>
 
 	<button hx-get="{% url 'crossing:entry_edit_form' entry.pk  %}"
-		hx-target="div.table-container"
+		hx-target="div.table-tools-wrapper"
 		> Edit </button>
 </div>

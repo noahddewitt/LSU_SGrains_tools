@@ -5,10 +5,12 @@ from . import views
 
 app_name = "crossing"
 urlpatterns = [
-        path("", views.crossesView, name = "Crosses View"),
-        path("crossesTable", views.crossesTableView, name = "crosses_table_view"),
+        path("", views.crossesView, name = "crosses_view"),
+        path("crossesTable", views.crossesWrapperView, name = "crosses_wrapper_view"),
+        path("crossesTable/tableContent", views.crossesTableView, name = "crosses_table_view"),
         path("entries", views.wcpView, name = "Entries View"),
-        path("entriesTable", views.wcpTableView, name = "entries_table_view"),
+        path("entries/entriesTable", views.wcpWrapperView, name = "entries_wrapper_view"),
+        path("entries/entriesTable/tableContent", views.wcpTableView, name = "entries_table_view"),
         path('export/csv/<str:requested_model>', views.export_csv, name='export_csv'),
         path('labels', views.lblView, name = "Labels View"),
         path("<str:id_str>/", views.entryDetail, name = "entry_detail"),

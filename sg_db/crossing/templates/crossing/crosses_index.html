@@ -1,46 +1,25 @@
-<!DOCTYPE html>
-{% extends "base.html" %}  
+{% extends "base.html" %}
 
 {% load django_tables2 %}
 {% load static %}
 
 {% block extrastyles %}
-	<link rel="stylesheet" href={% static 'sg_db/css/table_style.css' %}>
+        <link rel="stylesheet" href={% static 'sg_db/css/table_style.css' %}>
 {% endblock %}
 
-{% block main %} 
+{% block main %}
 
 <main>
-	<h2> Current Crosses </h2>
+    <h2> Current Crosses </h2>
 
-	<label for = "filter-box"> Search table: </label>
-        <input type = "search"
-	       class = "filter-box"
-               name = "filter"
-	       id = "filter-box"
-               placeholder = "Filter..."
-               hx-get="{% url 'crossing:crosses_table_view' %}"
-               hx-trigger="keyup delay:500ms, changed, search"
-               hx-target="div.table-container"
-               hx-swap="outerHTML">
+    <div hx-get="{% url 'crossing:crosses_wrapper_view' %}"
+	 hx-trigger="load"
+	 hx-swap="outerHTML">
+	    Error loading table wrapper!
+    </div>
 
-        <div hx-get="{% url 'crossing:crosses_table_view' %}" hx-trigger="load" hx-swap="outerHTML">
-  Loading table!
-	</div>
-
-	<form style="display: inline"
-	      action="crossing/export/Crosses" 
-	      method = "get">
-		<button> Download CSV </button>
-	</form>
-
-	<form action=""
-	      enctype="multipart/form-data"
-	      method="post">
-	    {% csrf_token %}
-	    {{ form }}
-	 <input class = "button" type="submit" value = "Submit">
-	
 </main>
 
-{% endblock %} 
+{% endblock %}
+
+

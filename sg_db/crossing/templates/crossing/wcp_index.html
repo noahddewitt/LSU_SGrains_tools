@@ -13,42 +13,11 @@
 
 	<h2> Crossing Block Entries </h2>
 
-		<form
-	    action="/crossing/entries"
-	    enctype="multipart/form-data"
-	    method="post"
-	>
-	    {% csrf_token %}
-	    {{ upload_form }}
-	    <input type="submit" name = 'upload_files' value = "Submit">
-	</form>
-
-	<br>
-	<b> Entry List CSV: </b>
-	<form style="display: inline" action="/crossing/export/csv/WCP_Entries" method="get">
-  		<button>Download</button>
-	</form>
-	&nbsp
-	<form
-		action="/crossing/entries"
-		enctype="multipart/form-data"
-		method="post"
-	>
-		{% csrf_token %}
-		{{ print_form }}
-		<input type ='submit' name = 'download_labels' value = 'Download'>
-	</form>
-
-	<input type = "search"
-	       name = "filter"
-	       placeholder = "Filter..."
-	       hx-get="{% url 'crossing:entries_table_view' %}"
-               hx-trigger="keyup delay:500ms, changed, search"
-               hx-target="div.table-container"
-               hx-swap="outerHTML">
-	<div hx-get="{% url 'crossing:entries_table_view' %}" hx-trigger="load" hx-swap="outerHTML">
-  Loading table!
-</div>
+	<div hx-get="{% url 'crossing:entries_wrapper_view' %}"
+	     hx-trigger="load"
+	     hx-swap="outerHTML">
+		Error loading table wrapper!
+	</div>
 
 </main>
 
