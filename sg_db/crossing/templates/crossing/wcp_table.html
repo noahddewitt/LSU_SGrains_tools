@@ -1,0 +1,96 @@
+{% load i18n %}
+{% load django_tables2 %}
+
+<!-- modified from bootstrap4 template -->
+
+{% block table-wrapper %}
+
+<div class="table-container">
+
+  {% block table %}
+    <table {% render_attrs table.attrs class="table" %}>
+
+      {% block table.thead %}
+      {% if table.show_header %}
+        <thead {{ table.attrs.thead.as_html }}>
+        <tr>
+        {% for column in table.columns %}
+          <th {{ column.attrs.th.as_html }} scope="col"
+            {% if column.orderable %}
+              hx-get="{{ request.path_info }}{% querystring table.prefixed_order_by_field=column.order_by_alias.next %}"
+              hx-trigger="click"
+              hx-target="div.table-container"
+              hx-swap="outerHTML"
+              style="cursor: pointer;"
+            {% endif %}>
+          {{ column.header }}
+        </th>
+        {% endfor %}
+      </tr>
+      </thead>
+      {% endif %}
+      {% endblock table.thead %}
+
+      {% block table.tbody %}
+        <tbody {{ table.attrs.tbody.as_html }} >
+        {% for row in table.paginated_rows %}
+	  {% block table.tbody.row %}
+	  <tr hx-get= "/crossing/{{ row.cells.wcp_id }}"
+		      hx-trigger="click"
+		      hx-target="div.table-container"
+		      hx-swap="outerHTML"
+			  {{ row.attrs.as_html }}>
+		{% for column, cell in row.items %}
+		<td {{ column.attrs.td.as_html }}>
+				{% if column.localize == None %}{{ cell }}{% else %}{% if column.localize %}{{ cell|localize }}{% else %}{{ cell|unlocalize }}{% endif %}{% endif %}</td>
+		{% endfor %}
+	  </tr>
+	  {% endblock table.tbody.row %}
+	{# Case where for.. fed empty var #}
+	{% empty %}
+	  {% if table.empty_text %}
+	  {% block table.tbody.empty_text %}
+	    <tr><td colspan="{{ table.columns|length }}">{{ table.empty_text }}</td></tr>
+	  {% endblock table.tbody.empty_text %}
+	  {% endif %}
+	{% endfor %}
+	</tbody>
+      {% endblock table.tbody %}
+      <!-- Did not include footer block here -->
+    </table>
+  {% endblock table %}
+
+{% block pagination %}
+<div class="pagination">
+  {% if table.page and table.paginator.num_pages > 1 %}
+    <a class="page-btn-left"
+       {% if table.page.has_previous %}
+       hx-get="{{ request.path_info }}{% querystring table.prefixed_page_field=table.page.previous_page_number %}"
+       hx-trigger="click"
+       hx-target="div.table-container"
+       hx-swap="outerHTML"
+       {% else %}disabled{% endif %}>
+      <span aria-hidden="true">&laquo;</span>
+    </a>
+    <a class="page-btn-middle">
+      {% with current_position=table.page.end_index total=table.page.paginator.count %}
+      {% blocktranslate %}
+      {{ current_position }} of {{ total }}
+      {% endblocktranslate %}
+      {% endwith %}
+    </a>
+    <a class="page-btn-right"
+       {% if table.page.has_next %}
+       hx-get="{{ request.path_info }}{% querystring table.prefixed_page_field=table.page.next_page_number %}"
+       hx-trigger="click"
+       hx-target="div.table-container"
+       hx-swap="outerHTML"
+       {% else %}disabled{% endif %}>
+      <span aria-hidden="true">&raquo;</span>
+    </a>
+</div>
+{% endif %}
+{% endblock pagination %}
+
+</div>
+{% endblock table-wrapper %}

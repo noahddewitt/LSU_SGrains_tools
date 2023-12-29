@@ -1,0 +1,30 @@
+<div class="table-container">
+
+    <div class="entry-title">
+	    <h3> <span> {{ entry.wcp_id }} : {{ entry.desig_text }} </span> </h3>
+    </div>
+
+<form hx-put="{% url 'crossing:entry_detail' entry.pk %}"
+      hx-target="div.table-container">
+	{% csrf_token %}
+
+      <div class = "row">
+	<div class = "column">
+	{% for field in form %}
+	  {% if forloop.counter0 == 5 %}
+	    </div>
+	    <div class = "column">
+	  {% endif %}
+
+	  <h3 class="detail_header"> {{field.label_tag}} </h3>
+	  <p class="detail_info"> {{ field }} </p>
+	{% endfor %}
+	</div>
+      </div>
+
+	<button hx-get="{% url 'crossing:entry_detail' entry.pk %}"
+		hx-target="div.table-container"
+		hx-swap="outerHTML">Return</button>
+	<input class = "button" type="submit" value = "Save" />
+</form>
+</div>

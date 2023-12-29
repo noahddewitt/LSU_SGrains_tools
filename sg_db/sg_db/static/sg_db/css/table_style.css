@@ -1,0 +1,71 @@
+.table {
+	width: 81vw;
+	border-collapse: collapse;
+	box-shadow: 10px 5px 5px rgba(0, 0, 0, 0.1);
+}
+
+
+.table tr td {
+	max-width: 17vw;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	padding-left: 20px;
+}
+
+
+.table tr {
+	height: 40px;
+}
+
+.table th:first-of-type {
+  border-top-left-radius: 6px;
+}
+.table th:last-of-type {
+  border-top-right-radius: 6px;
+}
+
+
+.table tr:first-child {
+ 	border-top: none;
+}
+
+.table th {
+	background-color: #C2B0D4;
+}
+
+.table .even {
+	background-color: #F9F8F0;
+}
+
+.table .odd {
+	background-color: #FFFFFF;
+}
+
+
+.pagination {
+	width: 15%;
+	padding: 10px;
+	margin: 10px 0;
+	text-align: center;
+	background-color: #C2B0D4;
+	align-content: center;
+	border-radius: 6px;
+	cursor: pointer;
+}
+
+.page-btn-left {
+	margin-right: 15px;
+	font-size:x-large;
+	cursor: pointer;
+}
+
+.page-btn-right {
+	margin-left: 15px;
+	font-size: x-large;
+	cursor: pointer;
+}
+
+.page-btn-middle {
+	font-size:large;
+}

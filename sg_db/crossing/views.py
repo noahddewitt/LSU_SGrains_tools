@@ -3,17 +3,20 @@ import csv
 
 from datetime import date, datetime
 from io import TextIOWrapper
+from functools import reduce
 
 from django.shortcuts import get_object_or_404, render
 
-from django.http import HttpResponse
+from django.http import HttpResponse, QueryDict
 from django.template import loader, RequestContext
+from django.db.models import Q
 
 from .models import WCP_Entries, Crosses
-from .tables import CrossingTable, WCPTable
+from .tables import CrossingTable, WCPTable, TableTest
 from .forms import WCPEntryForm, UploadWCPForm, CrossesEntryForm, UploadCrossesForm, TimesToPrintForm, UploadLabelsForm
 
 from django.views.generic.base import View
+
 
 
 def wcpView(request):
@@ -36,6 +39,21 @@ def wcpView(request):
             if print_form.is_valid():
                 
                 return export_labels(request, requested_model = "WCP_Entries", times_to_print = print_form.cleaned_data['Times_To_Print'])
+
+def wcpTableView(request):
+    if 'filter' in request.GET.keys():
+        query_str = request.GET['filter']
+        print(query_str)
+        table = TableTest(WCP_Entries.objects.filter(
+            Q(wcp_id__icontains=query_str) | 
+            Q(desig_text__icontains=query_str) |
+            Q(purdy_text__icontains=query_str) |
+            Q(genes_text__icontains=query_str) |
+            Q(notes_text__icontains=query_str)))
+    else:
+        table = TableTest(WCP_Entries.objects.all())
+    tables.config.RequestConfig(request, paginate={"per_page": 20}).configure(table)
+    return render(request, 'crossing/wcp_table.html', {"table" : table}) 
 
 def crossesView(request):
     table = CrossingTable(Crosses.objects.all())
@@ -96,9 +114,25 @@ def lblView(request):
         return(export_labels(request, "CSV", include_barcode = False, times_to_print = 1, csv_file = row_list))
 
 
-def detail(request, cross_id):
+def entryDetail(request, wcp_id):
+    entry = get_object_or_404(WCP_Entries, pk = wcp_id)
+    if request.method == 'GET':
+        return render(request, "crossing/entryDetail.html", {"entry": entry})
+    elif request.method == 'PUT':
+        data = QueryDict(request.body).dict()
+        form = WCPEntryForm(data, instance = entry)
+        if form.is_valid():
+            form.save()
+        return render(request, "crossing/entryDetail.html", {"entry": entry})
+
+def entryEditForm(request, wcp_id):
+    entry = get_object_or_404(WCP_Entries, pk = wcp_id)
+    form = WCPEntryForm(instance = entry)
+    return render(request, "crossing/entryEdit.html", {"entry": entry, "form": form})
+
+def crossDetail(request, cross_id):
     cross = get_object_or_404(Crosses, pk = cross_id)
-    return render(request, "crossing/detail.html", {"cross": cross})
+    return render(request, "crossing/crossDetail.html", {"cross": cross})
 
 def export_csv(request, requested_model):
     response = HttpResponse(content_type='text/csv')
@@ -153,7 +187,7 @@ def export_labels(request, requested_model, include_barcode = True,
         if requested_model == "CSV":
             row_item = [row_item['id'], row_item['row_1'], row_item['row_2']]
             second_row_text = ""
-        elif rqeuested_model == "WCP_Entries":
+        elif requested_model == "WCP_Entries":
             second_row_text = "Group"
         else:
             second_row_text = ""

@@ -34,9 +34,83 @@ h2 {
 	padding-bottom: 10px;
 }
 
+h3 {
+	margin: 20px 0;
+	color: #584d5e;
+	font-family: Lato;
+	text-align: center;
+	text-align: left;
+}
+
+.entry-title {
+	width: 100%;
+	text-align: center;
+	margin-top: 30px;
+}
+
+.entry-title h3 span {
+ 	background-color: #C2B0D4;
+	padding: 10px 20px;
+	margin-right: 15px;
+	border: none;
+	border-radius: 6px;
+}
+
 p {
 	margin: 10px 0;
 	color: #220730;
+}
+
+p.detail_info {
+	min-height: 40px;
+}
+
+
+input {
+  width: 30%;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  resize: vertical;
+  background-color: #F9F8F0;
+  margin-bottom: 10px;
+}
+
+p.detail_info input {
+  width: 90%;
+}
+
+button {
+	background-color: #461D7C;
+  color: white;
+	font-weight: bold;
+  padding: 10px 20px;
+	margin-right: 15px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  float: left;
+}
+
+input.button {
+		background-color: #461D7C;
+  color: white;
+	font-weight: bold;
+  padding: 10px 20px;
+	margin-right: 15px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  float: left;
+}
+
+
+.row {
+	display: flex;
+}
+
+.column {
+	flex: 50%;
 }
 
 ol li {

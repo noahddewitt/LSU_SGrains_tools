@@ -11,6 +11,7 @@ class WCPEntryForm(ModelForm):
 class UploadWCPForm(Form):
     WCP_Entries_File = FileField()
 
+
 class CrossesEntryForm(ModelForm):
     class Meta:
         model = Crosses 

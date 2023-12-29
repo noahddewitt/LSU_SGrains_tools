@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     'django_htmx',
     'django_tables2',
     'crispy_forms',
+    'sg_db',
 ]
 
 MIDDLEWARE = [
@@ -60,7 +61,7 @@ ROOT_URLCONF = 'sg_db.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [os.path.join(BASE_DIR, 'sg_db', 'templates')], #Not recommended to put root directory in installed_apps.
+        'DIRS': [os.path.join(BASE_DIR, 'templates')], #Not recommended to put root directory in installed_apps.
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [

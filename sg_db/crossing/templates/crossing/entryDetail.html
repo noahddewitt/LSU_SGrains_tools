@@ -1,0 +1,37 @@
+{% load django_tables2 %}
+<div class="table-container">
+  <div class="entry-title">
+	<h3> <span> {{ entry.wcp_id }} : {{ entry.desig_text }}</span></h3>
+  </div>
+  <div class="row">
+    <div class="column">
+	<h3> Year: </h3>
+	<p class="detail_info"> {{entry.year_text}}  crossing block.</p>
+	<h3> Entry Number </h3>
+	<p class="detail_info"> Number {{entry.eno_text}} </p>
+	<h3> Desig </h3>
+	<p class="detail_info"> {{entry.desig_text}} </p>
+	<h3> Pedigree </h3>
+	<p class="detail_info"> {{ entry.purdy_text }} </p> 
+    </div>
+    <div class="column">
+	<h3> Genotyping Id </h3>
+	<p class="detail_info"> {{entry.sample_id_text}} </p>
+	<h3> CP Group </h3>
+	<p class="detail_info"> {{entry.cp_group_text}} </p>
+	<h3> Genes </h3>
+	<p class="detail_info"> {{entry.genes_text}} </p>
+	<h3> Notes </h3>
+	<p class="detail_info"> {{entry.notes_text}} </p>
+    </div>
+  </div>
+	<br / >
+	
+	<button hx-get="{% url 'crossing:entries_table_view' %}"
+		hx-target="div.table-container"
+		hx-swap="outerHTML">Return</button>
+
+	<button hx-get="{% url 'crossing:entry_edit_form' entry.wcp_id  %}"
+		hx-target="div.table-container"
+		> Edit </button>
+</div>

@@ -1,25 +1,21 @@
 from django.db import models
+from django.db.models.functions import Cast
 from django.utils import timezone
 
-# Create your models here.
 #Do we want to define a Desig class here and say:
 #For Noah's DB, we just want to consider LSU lines, so only things
-#Going into the WCP are desigs....
 
-#I dont' think so. I think we want to load in a DESIG db from breedbase....
-
-
-#Note that this will eventuall relate back to some Desig genotype db
 class WCP_Entries(models.Model):
-    wcp_id = models.CharField(max_length = 20, primary_key = True)
-    year_text = models.CharField(max_length=4)
-    eno_text = models.CharField(max_length=20)
-    desig_text = models.CharField(max_length=200)
-    purdy_text = models.CharField(max_length=500)
-    cp_group_text = models.CharField(max_length=200)
-    genes_text = models.CharField(max_length=500, blank = True)
-    notes_text = models.CharField(max_length=1000, blank = True)
-    sample_id_text = models.CharField(max_length=200, blank = True)
+    wcp_id = models.CharField(max_length = 20, primary_key = True, verbose_name = "WCP Id")
+    year_text = models.CharField(max_length=4, verbose_name = "Year")
+    eno_text = models.CharField(max_length=20, verbose_name = "Eno")
+    desig_text = models.CharField(max_length=200, verbose_name = "Desig")
+    purdy_text = models.CharField(max_length=500, verbose_name = "Purdy Pedigree")
+    cp_group_text = models.CharField(max_length=200, verbose_name = "Group")
+    genes_text = models.CharField(max_length=500, blank = True, verbose_name = "Genes")
+    notes_text = models.CharField(max_length=1000, blank = True, verbose_name = "Notes")
+    sample_id_text = models.CharField(max_length=200, blank = True, verbose_name = "Genotyping Id")
+
 
     def __str__(self):
         return self.desig_text
