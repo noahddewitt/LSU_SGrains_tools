@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+
+{% load django_tables2 %}
+{% load static %}
+
+{% block extrastyles %}
+        <link rel="stylesheet" href={% static 'sg_db/css/table_style.css' %}>
+{% endblock %}
+
+{% block main %}
+
+<main>
+    <h2> Families </h2>
+
+    <div hx-get="{% url 'crossing:families_wrapper_view' %}"
+	 hx-trigger="load"
+	 hx-swap="outerHTML">
+	    Error loading table wrapper!
+    </div>
+
+</main>
+
+{% endblock %}
+
+

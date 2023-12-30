@@ -1,0 +1,59 @@
+<div class="table-tools-wrapper">
+  <div class="entry-title">
+	<h3> <span> {{ entry.cross_id }} </span></h3>
+  </div>
+  <div class="row">
+    <div class="column">
+	<h3> Purdy Pedigree </h3>
+	<p class="detail_info"> {{ entry.cross.purdy_text }} </p>
+	<h3> Segregating Genes </h3>
+	<p class="detail_info"> {{ entry.genes_text }} </p> 
+    </div>
+    <div class="column">
+	<h3> Cross Id </h3>
+	<p class="detail_info"> {{ entry.cross }} </p>
+	<h3> Notes </h3>
+	<p class="detail_info"> {{ entry.notes_text }} </p> 
+    </div>
+  </div>
+  <div class="row">
+    <div class="column">
+       <div class="entry-title">
+	       <h3> <span> {{ entry.cross.parent_one }} </span></h3>
+       </div>
+       <h3> Pedigree </h3>
+       {{ entry.cross.parent_one.purdy_text }}
+       <h3> WCP Year and Group </h3>
+       {{ entry.cross.parent_one.wcp_id }} - {{ entry.cross.parent_two.cp_group_text }}
+       <h3> Genes </h3>
+       {{ entry.cross.parent_one.genes_text }}
+       <h3> Notes </h3>
+       {{ entry.cross.parent_one.notes_text }}
+       <h3> Genotype Sample Id </h3>
+       {{ entry.cross.parent_one.sample_id_text }}
+    </div>
+    <div class="column">
+       <div class="entry-title">
+	       <h3> <span> {{ entry.cross.parent_two }} </span></h3>
+       </div>
+       <h3> Pedigree </h3>
+       {{ entry.cross.parent_two.purdy_text }}
+       <h3> WCP Year and Group </h3>
+       {{ entry.cross.parent_two.wcp_id }} - {{ entry.cross.parent_two.cp_group_text }}
+       <h3> Genes </h3>
+       {{ entry.cross.parent_two.genes_text }}
+       <h3> Notes </h3>
+       {{ entry.cross.parent_two.notes_text }}
+       <h3> Genotype Sample Id </h3>
+       {{ entry.cross.parent_two.sample_id_text }}
+    </div>
+  </div>
+	
+	<button hx-get="{% url 'crossing:crosses_wrapper_view' %}"
+		hx-target="div.table-tools-wrapper"
+		hx-swap="outerHTML">Return</button>
+
+	<button hx-get="{% url 'crossing:entry_edit_form' entry.cross.pk  %}"
+		hx-target="div.table-tools-wrapper"
+		> Edit </button>
+</div>

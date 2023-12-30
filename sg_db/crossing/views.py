@@ -12,8 +12,8 @@ from django.http import HttpResponse, QueryDict, HttpResponseNotFound
 from django.template import loader, RequestContext
 from django.db.models import Q
 
-from .models import WCP_Entries, Crosses
-from .tables import crossesTable, wcpTable
+from .models import WCP_Entries, Crosses, Families
+from .tables import wcpTable, crossesTable, familiesTable
 from .forms import WCPEntryForm, UploadWCPForm, CrossesEntryForm, UploadCrossesForm, TimesToPrintForm, UploadLabelsForm
 
 from django.views.generic.base import View
@@ -22,9 +22,6 @@ def wcpView(request):
     return render(request, "crossing/wcp_index.html")
 
 def wcpWrapperView(request):
-    #table = WCPTable(WCP_Entries.objects.all())
-    #tables.config.RequestConfig(request).configure(table)
-
     if request.method == 'GET':
         return render(request, "crossing/wcp_table_wrapper.html", {'upload_form': UploadWCPForm(), 'print_form': TimesToPrintForm()})
     elif request.method == 'POST':
@@ -117,9 +114,27 @@ def crossesTableView(request):
     else:
         table = crossesTable(Crosses.objects.all())
     tables.config.RequestConfig(request, paginate={"per_page": 15}).configure(table)
-    print(table)
     return render(request, 'crossing/display_table.html', {"table" : table}) 
 
+def familiesView(request):
+    return render(request, "crossing/families_index.html")
+
+def familiesWrapperView(request):
+    if request.method == 'GET':
+        return render(request, "crossing/families_table_wrapper.html")
+
+def familiesTableView(request):
+    if 'filter' in request.GET.keys():
+        query_str = request.GET['filter']
+        table = familiesTable(families.objects.filter(
+            Q(family_id__icontains=query_str) | 
+            Q(purdy_text__icontains=query_str) |
+            Q(cross__cross_id__icontains=query_str) |
+            Q(genes_text__icontains=query_str)))
+    else:
+        table = familiesTable(Families.objects.all())
+    tables.config.RequestConfig(request, paginate={"per_page": 15}).configure(table)
+    return render(request, 'crossing/display_table.html', {"table" : table}) 
 
 def lblView(request):
     if request.method == 'GET':
@@ -136,17 +151,17 @@ def lblView(request):
 def entryDetail(request, id_str):
     if re.match(r'^WCP', id_str):
         curModel = WCP_Entries
-        curForm = WCPEntryForm
+#        curForm = WCPEntryForm
         htmlPath = "crossing/entryDetail.html"
     elif re.match(r'^T', id_str):
         curModel = Crosses
-        curForm = CrossesEntryForm
+ #       curForm = CrossesEntryForm
         htmlPath = "crossing/crossDetail.html"
     elif re.match(r'^LA', id_str):
         #Change this later to go to families table
-        curModel = Crosses
-        curForm = CrossesEntryForm
-        htmlPath = "crossing/crossDetail.html"
+        curModel = Families 
+  #      curForm = CrossesEntryForm
+        htmlPath = "crossing/familyDetail.html"
     else:
         print(id_str)
         return HttpResponseNotFound(id_str)
@@ -183,9 +198,6 @@ def entryEditForm(request, id_str):
     form = curForm(instance = entry)
     return render(request, "crossing/entryEdit.html", {"entry": entry, "form": form})
 
-#def crossDetail(request, cross_id):
-#    cross = get_object_or_404(Crosses, pk = cross_id)
-#    return render(request, "crossing/crossDetail.html", {"cross": cross})
 
 def export_csv(request, requested_model):
     response = HttpResponse(content_type='text/csv')

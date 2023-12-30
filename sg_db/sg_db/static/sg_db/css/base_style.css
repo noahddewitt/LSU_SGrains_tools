@@ -156,6 +156,15 @@ input.button {
   float: left;
 }
 
+select {
+  width: auto;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  background-color: #F9F8F0;
+  margin-bottom: 10px;
+}
+
 
 .row {
 	display: flex;

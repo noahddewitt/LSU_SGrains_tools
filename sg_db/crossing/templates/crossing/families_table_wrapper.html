@@ -1,0 +1,26 @@
+<div class="table-tools-wrapper">
+
+	<label for = "filter-box"
+	       class = "filter-box"> Search table: </label>
+	<input type = "search"
+	       class = "filter-box"
+	       name = "filter"
+	       id = "filter-box"
+	       placeholder = "Filter..."
+	       hx-get="{% url 'crossing:families_table_view' %}"
+	       hx-trigger="keyup delay:500ms, changed, search"
+	       hx-target="div.table-container"
+	       hx-swap="outerHTML">
+
+	<div hx-get="{% url 'crossing:families_table_view' %}" hx-trigger="load" hx-swap="outerHTML">
+		Error loading table!
+	</div>
+
+	<form style="display: inline"
+	      action="crossing/export/Families" 
+	      method = "get">
+		<button> Download CSV </button>
+	</form>
+
+</div>
+
