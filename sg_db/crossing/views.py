@@ -1,5 +1,4 @@
 import django_tables2 as tables
-import csv
 import re
 
 from datetime import date, datetime
@@ -14,7 +13,7 @@ from django.db.models import Q
 
 from .models import WCP_Entries, Crosses, Families
 from .tables import wcpTable, crossesTable, familiesTable
-from .forms import WCPEntryForm, UploadWCPForm, CrossesEntryForm, UploadCrossesForm, TimesToPrintForm, UploadLabelsForm
+from .forms import WCPEntryForm, UploadWCPForm, CrossesEntryForm, UploadCrossesForm, FamiliesEntryForm
 
 from django.views.generic.base import View
 
@@ -67,7 +66,9 @@ def crossesWrapperView(request):
             #Create new dictionary based on dictionary defined by InterCross column names
             if int(row['seeds']) > 0:
                 rowStatus = "Set"
-            else:
+            elif int(row['seeds']) < 0:
+                rowStatus = "Failed"
+            elif int(row['seeds']) == 0:
                 rowStatus = "Made"
 
             crossTime =  datetime.strptime(row['timestamp'], "%Y-%m-%d_%H_%M_%S_%f")
@@ -126,7 +127,7 @@ def familiesWrapperView(request):
 def familiesTableView(request):
     if 'filter' in request.GET.keys():
         query_str = request.GET['filter']
-        table = familiesTable(families.objects.filter(
+        table = familiesTable(Families.objects.filter(
             Q(family_id__icontains=query_str) | 
             Q(purdy_text__icontains=query_str) |
             Q(cross__cross_id__icontains=query_str) |
@@ -135,17 +136,6 @@ def familiesTableView(request):
         table = familiesTable(Families.objects.all())
     tables.config.RequestConfig(request, paginate={"per_page": 15}).configure(table)
     return render(request, 'crossing/display_table.html', {"table" : table}) 
-
-def lblView(request):
-    if request.method == 'GET':
-        return render(request, "crossing/labels.html", {"label_form": UploadLabelsForm()}) #Merge?
-    elif request.method == 'POST':
-        Labels_File = request.FILES["Labels_File"]
-        rows = TextIOWrapper(Labels_File, encoding="utf-8", newline="")
-        row_list = []
-        for row in csv.DictReader(rows):
-           row_list.append(row)
-        return(export_labels(request, "CSV", include_barcode = False, times_to_print = 1, csv_file = row_list))
 
 
 def entryDetail(request, id_str):
@@ -186,10 +176,8 @@ def entryEditForm(request, id_str):
         curModel = Crosses
         curForm = CrossesEntryForm
     elif re.match(r'^LA', id_str):
-        #Change this later to go to families table
-        print("oh hell...")
-        curModel = Crosses
-        curForm = CrossesEntryForm
+        curModel = Families
+        curForm = FamiliesEntryForm
     else:
         print(id_str)
         return HttpResponseNotFound(id_str)
@@ -197,82 +185,4 @@ def entryEditForm(request, id_str):
     entry = get_object_or_404(curModel, pk = id_str)
     form = curForm(instance = entry)
     return render(request, "crossing/entryEdit.html", {"entry": entry, "form": form})
-
-
-def export_csv(request, requested_model):
-    response = HttpResponse(content_type='text/csv')
-
-    if requested_model == "WCP_Entries":
-            cur_model = WCP_Entries
-    elif requested_model == "Crosses":
-            cur_model = Crosses
-
-    date_string = date.today().strftime("%b%d%y")
-    file_name = requested_model + "_" + date_string + ".csv"
-    response['Content-Disposition'] = 'attachment; filename="' + file_name +  '"'
-
-    writer = csv.writer(response)
-    
-    #Gets names of all model fields -- probably better way to do this...
-    field_list = []
-    for field in cur_model._meta.get_fields():
-        if field.is_relation == False:
-            field_list.append(field.name)
-
-    writer.writerow(field_list)
-
-    row_items = cur_model.objects.all().values_list(*field_list)
-    for row_item in row_items:
-        writer.writerow(row_item)
-
-    return response
-
-#I think this needs to be moved to its own page with options to print from model or upload csv
-def export_labels(request, requested_model, include_barcode = True, 
-                  include_date = True, times_to_print = 1, csv_file = None):
-    response = HttpResponse(content_type = 'text/plain')
-
-    if requested_model == "WCP_Entries":
-        cur_model = WCP_Entries
-    elif requested_model == "Crosses":
-        cur_model = Crosses
-
-    file_date_string = date.today().strftime("%b%d%y")
-    labl_date_string = date.today().strftime("%m/%d/%Y")
-
-    file_name = requested_model + "_lbls_" + file_date_string + ".zpl"
-    response['Content-Disposition'] = 'attachment; filename="' + file_name +  '"'
-    
-    if requested_model != "CSV":
-        row_items = cur_model.objects.all().values_list("wcp_id", "desig_text", "cp_group_text")
-    else:
-        row_items = csv_file 
-
-    for row_item in row_items:
-        if requested_model == "CSV":
-            row_item = [row_item['id'], row_item['row_1'], row_item['row_2']]
-            second_row_text = ""
-        elif requested_model == "WCP_Entries":
-            second_row_text = "Group"
-        else:
-            second_row_text = ""
-
-        for _ in range(times_to_print):
-            response.write("^XA\n")
-            response.write("^CF0,40\n")
-            response.write("^FO10,5^GB490,3,3^FS\n")
-            if requested_model in ["WCP_Entries", "CSV"]:
-                response.write("^FO15,35^FD" + row_item[0] + "^FS\n")
-                response.write("^CF0,20\n")
-                response.write("^FO16,90^FD" + row_item[1] + "^FS\n")
-                response.write("^FO16,125^FD" + second_row_text + row_item[2] + "^FS\n")
-                if include_date == True:
-                    response.write("^FO16,160^FD" + labl_date_string + "^FS\n")
-                if include_barcode == True:
-                    response.write("^FO320,20^BQN,2,7,Q,7^FDQA," + row_item[0] + "^FS\n")
-            response.write("^FO10, 195^GB490,3,3^FS\n")
-            response.write("^XZ\n")
-
-    return response
-
 

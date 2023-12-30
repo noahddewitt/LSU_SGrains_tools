@@ -33,6 +33,8 @@ ALLOWED_HOSTS = []
 
 INSTALLED_APPS = [
     'crossing.apps.CrossingConfig',
+    'germplasm.apps.GermplasmConfig',
+    'tools.apps.ToolsConfig',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',

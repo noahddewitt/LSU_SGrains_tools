@@ -1,6 +1,7 @@
 from django.forms import IntegerField, FileField, Form, ModelForm, NumberInput
 
-from .models import WCP_Entries, Crosses
+from .models import WCP_Entries, Crosses, Families
+
 
 class WCPEntryForm(ModelForm):
     class Meta:
@@ -22,19 +23,8 @@ class UploadCrossesForm(Form):
     Crosses_File = FileField(label = '')
     Crosses_File.widget.attrs.update({'class': 'file-upload'})
 
-class UploadLabelsForm(Form):
-    Labels_File = FileField()
-    Labels_File.widget.attrs.update({'class': 'file-upload'})
+class FamiliesEntryForm(ModelForm):
+    class Meta:
+        model = Families 
+        fields = ["family_id", "purdy_text", "genes_text", "notes_text", 'cross']
 
-    Times_To_Print = IntegerField(label = 'Times to print', initial = '1')
-    Times_To_Print.widget.attrs.update({'class': 'times-counter',
-                                        'style': 'width:20ch',
-                                        'max': '99',
-                                        'min': '1'})
-
-class TimesToPrintForm(Form):
-    Times_To_Print = IntegerField(label = 'Entry List Labels: ', initial = '1')
-    Times_To_Print.widget.attrs.update({'style': 'width:5ch',
-                                        'class': 'times-counter',
-                                        'max': '99',
-                                        'min': '1'})

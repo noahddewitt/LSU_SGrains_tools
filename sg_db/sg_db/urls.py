@@ -22,5 +22,6 @@ urlpatterns = [
     path("", TemplateView.as_view(template_name="sg_db/index_info.html"), name = "index_info"), #Allows loading template directly without views file
     path("crossing_shiny", TemplateView.as_view(template_name="sg_db/crossing_shiny.html"), name = "crossing_shiny"), 
     path('crossing/', include("crossing.urls")),
+    path('tools/', include("tools.urls")),
     path('admin/', admin.site.urls),
 ]

@@ -4,48 +4,76 @@
   </div>
   <div class="row">
     <div class="column">
+       <div class="detail-box">
 	<h3> Status </h3>
 	<p class="detail_info"> {{entry.status_text}} </p>
+       </div>
+       <div class="detail-box">
 	<h3> Crosser </h3>
 	<p class="detail_info"> {{ entry.crosser_text }} </p> 
+       </div>
     </div>
     <div class="column">
+       <div class="detail-box">
 	<h3> Seed </h3>
 	<p class="detail_info"> {{entry.seed_int}} </p>
+       </div>
+       <div class="detail-box">
 	<h3> Cross Date </h3>
 	<p class="detail_info"> {{ entry.cross_date }} </p> 
+       </div>
     </div>
   </div>
   <div class="row">
     <div class="column">
        <div class="entry-title">
-	       <h3> <span> {{ entry.parent_one }} </span></h3>
+	       <h3> <span> &#9792; {{  entry.parent_one }} </span></h3>
        </div>
-       <h3> Pedigree </h3>
-       {{ entry.parent_one.purdy_text }}
-       <h3> WCP Year and Group </h3>
-       {{ entry.parent_one.wcp_id }} - {{ entry.parent_two.cp_group_text }}
-       <h3> Genes </h3>
-       {{ entry.parent_one.genes_text }}
-       <h3> Notes </h3>
-       {{ entry.parent_one.notes_text }}
-       <h3> Genotype Sample Id </h3>
-       {{ entry.parent_one.sample_id_text }}
+       <div class="detail-box">
+        <h3> Pedigree </h3>
+        <p class="detail_info">{{ entry.parent_one.purdy_text }}</p>
+       </div>
+       <div class="detail-box">
+        <h3> WCP Year and Group </h3>
+        <p class="detail_info">{{ entry.parent_one.wcp_id }} - {{ entry.parent_two.cp_group_text }}</p>
+       </div>
+       <div class="detail-box">
+        <h3> Genes </h3>
+        <p class="detail_info">{{ entry.parent_one.genes_text }}</p>
+       </div>
+        <div class="detail-box">
+        <h3> Notes </h3>
+       <p class="detail_info">{{ entry.parent_one.notes_text }}</p>
+       </div>
+        <div class="detail-box">
+        <h3> Genotype Sample Id </h3>
+       <p class="detail_info">{{ entry.parent_one.sample_id_text }}</p>
+       </div>
     </div>
     <div class="column">
        <div class="entry-title">
-	       <h3> <span> {{ entry.parent_two }} </span></h3>
+	       <h3> <span> &#9794; {{ entry.parent_two }} </span></h3>
        </div>
-       <h3> Pedigree </h3>
-       {{ entry.parent_two.purdy_text }}
-       <h3> WCP Year and Group </h3>
-       {{ entry.parent_two.wcp_id }} - {{ entry.parent_two.cp_group_text }}
-       <h3> Genes </h3>
-       {{ entry.parent_two.genes_text }}
-       <h3> Notes </h3>
-       {{ entry.parent_two.notes_text }}
-       <h3> Genotype Sample Id </h3>
-       {{ entry.parent_two.sample_id_text }}
+       <div class="detail-box">
+       	<h3> Pedigree </h3>
+       	<p class="detail_info">{{ entry.parent_two.purdy_text }}</p>
+       </div>
+       <div class="detail-box">
+        <h3> WCP Year and Group </h3>
+        <p class="detail_info">{{ entry.parent_two.wcp_id }} - {{ entry.parent_two.cp_group_text }}</p>
+       </div>
+       <div class="detail-box">
+        <h3> Genes </h3>
+        <p class="detail_info">{{ entry.parent_two.genes_text }}
+       </div>
+       <div class="detail-box">
+        <h3> Notes </h3>
+        <p class="detail_info">{{ entry.parent_two.notes_text }}</p>
+       </div>
+       <div class="detail-box">
+        <h3> Genotype Sample Id </h3>
+        <p class="detail_info">{{ entry.parent_two.sample_id_text }}</p>
+       </div>
     </div>
   </div>
 	

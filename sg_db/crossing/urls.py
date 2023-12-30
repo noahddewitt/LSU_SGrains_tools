@@ -14,11 +14,8 @@ urlpatterns = [
         path("families", views.familiesView, name = "families_view"),
         path("families/familiesTable", views.familiesWrapperView, name = "families_wrapper_view"),
         path("families/familiesTable/tableContent", views.familiesTableView, name = "families_table_view"),
-        path('export/csv/<str:requested_model>', views.export_csv, name='export_csv'),
-        path('labels', views.lblView, name = "Labels View"),
         path("<str:id_str>/", views.entryDetail, name = "entry_detail"),
         path("<str:id_str>/edit/", views.entryEditForm, name = "entry_edit_form"),
         ]
 
 
-        #path('export/lbl/<str:requested_model>', views.export_labels, name='export_labels'),

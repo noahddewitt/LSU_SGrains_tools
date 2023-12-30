@@ -14,4 +14,5 @@ class crossesTable(tables.Table):
 
 class familiesTable(tables.Table):
     class Meta:
-        model = Families 
+        model = Families
+        exclude = ("year_text", "order_int")

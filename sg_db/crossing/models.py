@@ -1,9 +1,5 @@
 from django.db import models
-from django.db.models.functions import Cast
 from django.utils import timezone
-
-#Do we want to define a Desig class here and say:
-#For Noah's DB, we just want to consider LSU lines, so only things
 
 class WCP_Entries(models.Model):
     wcp_id = models.CharField(max_length = 20, primary_key = True, verbose_name = "WCP Id")
@@ -39,11 +35,13 @@ class Crosses(models.Model):
 
 class Families(models.Model):
     family_id = models.CharField(max_length=200, primary_key = True, verbose_name = "Family")
+    year_text = models.CharField(max_length=4, verbose_name = "Cross Year")
+    order_int = models.IntegerField(verbose_name = "Cross Order")
     purdy_text = models.CharField(max_length=500, verbose_name = "Purdy Pedigree")
-    genes_text = models.CharField(max_length=500, verbose_name = "Genes")
-    notes_text = models.CharField(max_length=10000, verbose_name = "Notes")
+    genes_text = models.CharField(max_length=500, blank = True, verbose_name = "Genes")
+    notes_text = models.CharField(max_length=10000, blank = True, verbose_name = "Notes")
     cross = models.ForeignKey(Crosses, on_delete = models.PROTECT, related_name = 'cross', verbose_name = "Cross Id")
 
     def __str__(self):
-        return self.cross_text
+        return self.family_id
 
