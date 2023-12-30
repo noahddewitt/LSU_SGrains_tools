@@ -14,6 +14,7 @@ from django.db.models import Q
 from .models import WCP_Entries, Crosses, Families
 from .tables import wcpTable, crossesTable, familiesTable
 from .forms import WCPEntryForm, UploadWCPForm, CrossesEntryForm, UploadCrossesForm, FamiliesEntryForm
+from tools.forms import TimesToPrintForm
 
 from django.views.generic.base import View
 
