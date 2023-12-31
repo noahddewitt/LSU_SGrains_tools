@@ -45,8 +45,7 @@ class Crosses(models.Model):
                 self.create_families()
 
         #This is the default I believe, so just adding new code
-        #return super().save(*args, **kwargs)
-        return super(Crosses, self).save(*args, **kwargs) 
+        return super().save(*args, **kwargs)
 
     def create_families(self):
         newPurdyText = self.parent_one.desig_text + " / " + self.parent_two.desig_text
@@ -74,13 +73,8 @@ class Crosses(models.Model):
     
         #This is a pretty ugly stretch.
         for gene in search_genes:
-            print(gene)
             gene_one = gene_dict_one.get(gene) or ""
             gene_two = gene_dict_two.get(gene) or ""
-
-            print("Genes:")
-            print(gene_one)
-            print(gene_two)
 
             #Move on if neither parent has some form of gene
             if {gene_one, gene_two} != {''}:
@@ -103,7 +97,7 @@ class Crosses(models.Model):
                     gene_class_two = ''
 
                 gene_class_set = {gene_class_one, gene_class_two}
-                print(gene_class_set)
+
                 #Both parents homozygous
                 if gene_class_set == {'HOM'}:
                     new_gene = gene
@@ -117,6 +111,7 @@ class Crosses(models.Model):
                      gene_class_set == {'', 'HET+'} or gene_class_set == {'', 'HET-'}):
                     new_gene = gene + "Het-"
                 else:
+                    #This won't print in this context.
                     print("Classs " + str(gene_class_set) + " unrecognized.")
                     new_gene = "Error"
                 
@@ -159,6 +154,7 @@ class Families(models.Model):
                 self.order_int = Families.cur_year_objects.all().aggregate(models.Max('order_int'))['order_int__max'] + 1
             self.family_id = "LA" + self.year_text[2:4:1] + str(self.order_int).zfill(3)
         super(Families, self).save(*args, **kwargs) 
+        #super().save(*args, **kwargs) 
 
     def __str__(self):
         return self.family_id

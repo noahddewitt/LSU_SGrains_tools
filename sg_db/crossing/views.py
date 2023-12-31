@@ -152,7 +152,7 @@ def entryDetail(request, id_str):
     elif re.match(r'^LA', id_str):
         #Change this later to go to families table
         curModel = Families 
-        curForm = CrossesEntryForm
+        curForm = FamiliesEntryForm
         htmlPath = "crossing/familyDetail.html"
     else:
         print(id_str)
@@ -163,10 +163,14 @@ def entryDetail(request, id_str):
     if request.method == 'GET':
         return render(request, htmlPath, {"entry": entry})
     elif request.method == 'PUT':
+        print(id_str, file = sys.stderr)
         data = QueryDict(request.body).dict()
+        print(data, file = sys.stderr) 
         form = curForm(data, instance = entry)
         if form.is_valid():
             form.save()
+        else:
+            print(form.errors, file=sys.stderr)
 
         return render(request, htmlPath, {"entry": entry})
 
