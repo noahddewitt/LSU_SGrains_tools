@@ -22,11 +22,12 @@
 		<button> Download CSV </button>
 	</form>
 
-	<form action=""
-	      enctype="multipart/form-data"
-	      method="post">
+	<form hx-post = "{% url 'crossing:crosses_wrapper_view' %}"
+	      hx-encoding = "multipart/form-data"
+	      hx-target="div.table-tools-wrapper">
 		{% csrf_token %}
 		{{ form }}
 		<input class = "button" type="submit" value = "Submit">
+	</form>
 </div>
 

@@ -37,15 +37,17 @@ class Crosses(models.Model):
     seed_int = models.IntegerField(default = 0, verbose_name = "Seed")
 
     def save(self, *args, **kwargs):
+        try:
+            old_status = Crosses.objects.get(pk = self.cross_id).status_text
+        except:
+            old_status = None
+
+        super().save(*args, **kwargs)
+
         if self.status_text == "Set":
-            if self._state.adding:
-                self.create_families()
-            #Can't be an or statement because error thrown if evaluated
-            elif Crosses.objects.get(pk = self.cross_id).status_text == "Made":
+            if (old_status is None) or (old_status == "Made"): 
                 self.create_families()
 
-        #This is the default I believe, so just adding new code
-        return super().save(*args, **kwargs)
 
     def create_families(self):
         newPurdyText = self.parent_one.desig_text + " / " + self.parent_two.desig_text

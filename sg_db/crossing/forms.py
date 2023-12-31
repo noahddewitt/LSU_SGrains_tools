@@ -16,7 +16,7 @@ class UploadWCPForm(Form):
 class CrossesEntryForm(ModelForm):
     class Meta:
         model = Crosses 
-        fields = ["cross_id", "parent_one", "parent_two", "cross_date", 
+        fields = ["cross_id", "year_text", "parent_one", "parent_two", "cross_date", 
                   "crosser_text", "status_text", "seed_int"]
 
 class UploadCrossesForm(Form):

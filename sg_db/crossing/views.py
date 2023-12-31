@@ -1,6 +1,7 @@
 import django_tables2 as tables
 import re
 import sys
+import csv
 
 from datetime import date, datetime
 from io import TextIOWrapper
@@ -59,32 +60,34 @@ def crossesView(request):
     return render(request, "crossing/crosses_index.html")
 
 def crossesWrapperView(request):
+    print(request.method, file = sys.stderr)
     if request.method == 'GET':
         return render(request, "crossing/crosses_table_wrapper.html", {"form": UploadCrossesForm()})
     elif request.method == 'POST':
+        print("TEST")
         Crosses_File = request.FILES["Crosses_File"]
         rows = TextIOWrapper(Crosses_File, encoding="utf-8", newline="")
+        print("Crosses POST rquest", file = sys.stderr)
         for row in csv.DictReader(rows):
             #Create new dictionary based on dictionary defined by InterCross column names
+            print(row['crossDbId'], file = sys.stderr)
             if int(row['seeds']) > 0:
                 rowStatus = "Set"
             elif int(row['seeds']) < 0:
+                row['seeds'] = 0
                 rowStatus = "Failed"
             elif int(row['seeds']) == 0:
                 rowStatus = "Made"
 
             crossTime =  datetime.strptime(row['timestamp'], "%Y-%m-%d_%H_%M_%S_%f")
 
-            #UPDATE -- I think this needs to go - intercross will read in WCP_IDs
-            #Okay, so I want to use human-readable desigs, but store data as Ids.
-            #So I'll have to go through and get the Ids here.
-            parent_one_str = WCP_Entries.objects.get(year_text = "2024", desig_text = row['femaleObsUnitDbId']).wcp_id
-            parent_two_str = WCP_Entries.objects.get(year_text = "2024", desig_text = row['maleObsUnitDbId']).wcp_id
-
-
+            #TODO - Get year from two parents. 
+            curYear = "2024"
+            
             modRow = {'cross_id' : row['crossDbId'],
-                      'parent_one' : parent_one_str, 
-                      'parent_two' : parent_two_str, 
+                      'year_text' : curYear,
+                      'parent_one' : row['femaleObsUnitDbId'], 
+                      'parent_two' : row['maleObsUnitDbId'], 
                       'cross_date' : crossTime, 
                       'crosser_text' : row['person'],
                       'status_text' : rowStatus,
@@ -101,7 +104,6 @@ def crossesWrapperView(request):
 
                 if form.is_valid():
                     form.save()
-
         return render(request, "crossing/crosses_table_wrapper.html", {"form": UploadCrossesForm()})
 
 def crossesTableView(request):
@@ -165,7 +167,6 @@ def entryDetail(request, id_str):
     elif request.method == 'PUT':
         print(id_str, file = sys.stderr)
         data = QueryDict(request.body).dict()
-        print(data, file = sys.stderr) 
         form = curForm(data, instance = entry)
         if form.is_valid():
             form.save()
