@@ -1,0 +1,11 @@
+<p class = "crossing-group-column"
+   {% if record.cp_group_text == "A" %}
+   	style = "color: #d86853ff; font-weight: bold;"> A
+   {% elif record.cp_group_text == "B" %}
+   	style = "color: #7d91ccff; font-weight: bold;"> B
+   {% elif record.cp_group_text == "G" %}
+   	style = "color: #7dc770ff; font-weight: bold;"> G
+   {% elif record.cp_group_text == "T" %}
+   	style = "color: #706b74ff; font-weight: bold;"> T
+   {% endif %}
+</p>

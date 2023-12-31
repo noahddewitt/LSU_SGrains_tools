@@ -18,7 +18,7 @@ class WCP_Entries(models.Model):
     cp_group_text = models.CharField(max_length=200, verbose_name = "Group")
     genes_text = models.CharField(max_length=500, blank = True, verbose_name = "Genes")
     notes_text = models.CharField(max_length=1000, blank = True, verbose_name = "Notes")
-    sample_id_text = models.CharField(max_length=200, blank = True, verbose_name = "Genotyping Id")
+    sample_id_text = models.CharField(max_length=200, blank = True, verbose_name = "Geno Id")
 
     objects = models.Manager()
     cur_year_objects = CurrentYearManager() 
