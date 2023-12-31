@@ -45,7 +45,8 @@ class Crosses(models.Model):
                 self.create_families()
 
         #This is the default I believe, so just adding new code
-        return super().save(*args, **kwargs)
+        #return super().save(*args, **kwargs)
+        return super(Crosses, self).save(*args, **kwargs) 
 
     def create_families(self):
         newPurdyText = self.parent_one.desig_text + " / " + self.parent_two.desig_text

@@ -1,5 +1,6 @@
 import django_tables2 as tables
 import re
+import sys
 
 from datetime import date, datetime
 from io import TextIOWrapper
@@ -142,16 +143,16 @@ def familiesTableView(request):
 def entryDetail(request, id_str):
     if re.match(r'^WCP', id_str):
         curModel = WCP_Entries
-#        curForm = WCPEntryForm
+        curForm = WCPEntryForm
         htmlPath = "crossing/entryDetail.html"
     elif re.match(r'^T', id_str):
         curModel = Crosses
- #       curForm = CrossesEntryForm
+        curForm = CrossesEntryForm
         htmlPath = "crossing/crossDetail.html"
     elif re.match(r'^LA', id_str):
         #Change this later to go to families table
         curModel = Families 
-  #      curForm = CrossesEntryForm
+        curForm = CrossesEntryForm
         htmlPath = "crossing/familyDetail.html"
     else:
         print(id_str)
@@ -166,10 +167,10 @@ def entryDetail(request, id_str):
         form = curForm(data, instance = entry)
         if form.is_valid():
             form.save()
+
         return render(request, htmlPath, {"entry": entry})
 
 def entryEditForm(request, id_str):
-
     if re.match(r'^WCP', id_str):
         curModel = WCP_Entries
         curForm = WCPEntryForm

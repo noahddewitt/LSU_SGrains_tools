@@ -8,9 +8,9 @@
 	 {% endif %}
     </div>
 
-<form hx-put="{% url 'crossing:entry_detail' entry.pk %}"
-      hx-target="div.table-container">
-	{% csrf_token %}
+    <form hx-put="{% url 'crossing:entry_detail' entry.pk %}"
+	  hx-target="div.table-tools-wrapper">
+      {% csrf_token %}
 
       <div class = "row">
 	<div class = "column">
@@ -27,9 +27,9 @@
 	</div>
       </div>
 
+      <input class = "button" type="submit" value = "Save" />
+</form>
 	<button hx-get="{% url 'crossing:entry_detail' entry.pk %}"
 		hx-target="div.table-tools-wrapper"
 		hx-swap="outerHTML">Return</button>
-	<input class = "button" type="submit" value = "Save" />
-</form>
 </div>
