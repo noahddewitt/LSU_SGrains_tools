@@ -3,6 +3,7 @@ import re
 from django.db import models
 from django.utils import timezone
 
+from germplasm.models import Stocks
 
 class CurrentYearManager(models.Manager):
     crossingYear = "2024" #Modify this as modification of datetime 
@@ -156,7 +157,20 @@ class Families(models.Model):
                 self.order_int = Families.cur_year_objects.all().aggregate(models.Max('order_int'))['order_int__max'] + 1
             self.family_id = "LA" + self.year_text[2:4:1] + str(self.order_int).zfill(3)
         super(Families, self).save(*args, **kwargs) 
-        #super().save(*args, **kwargs) 
+        
+        self.create_f1_seed()
+
+    def create_f1_seed(self):
+        new_id = "S-" + self.cross.cross_id
+
+        objects, created = Stocks.objects.update_or_create(
+                stock_id = new_id,
+                family = self,
+                gen_derived_int = 0,
+                gen_inbred_int = 1,
+                location_text = "",
+                amount_decimal = self.cross.seed_int,
+                amount_units = "sds")
 
     def __str__(self):
         return self.family_id
