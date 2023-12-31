@@ -1,5 +1,8 @@
+import re
+
 from django.db import models
 from django.utils import timezone
+
 
 class CurrentYearManager(models.Manager):
     crossingYear = "2024" #Modify this as modification of datetime 
@@ -33,24 +36,103 @@ class Crosses(models.Model):
     status_text = models.CharField(max_length = 10, default = "Made", verbose_name = "Status")
     seed_int = models.IntegerField(default = 0, verbose_name = "Seed")
 
-    #def save(self, *args, **kwargs):
-    #    self.create_families()
-    #    return super().save(*args, **kwargs)
+    def save(self, *args, **kwargs):
+        if self.status_text == "Set":
+            if self._state.adding:
+                self.create_families()
+            #Can't be an or statement because error thrown if evaluated
+            elif Crosses.objects.get(pk = self.cross_id).status_text == "Made":
+                self.create_families()
 
-    #def create_families(self):
-    #    #Subset self by status?
+        #This is the default I believe, so just adding new code
+        return super().save(*args, **kwargs)
 
-    #    newPurdyText = self.parent_one.desig_text + " / " + self.parent_two.desig_text
+    def create_families(self):
+        newPurdyText = self.parent_one.desig_text + " / " + self.parent_two.desig_text
 
-        #Fix this
-     #   newGenes = self.parent_one.genes_text
+        #Fix this by defining custom function below
+        newGenes = Crosses.create_gene_str(self.parent_one.genes_text, self.parent_two.genes_text)
 
-     #   ... = Families.objects.update_or_create(
-     #           year_text = self.year_text,
-     #           purdy_text = newPurdyText,
-     #           genes_text = newGenes,
-     #           cross = self.cross_id
-      #          )
+        #Returns tuple
+        objects, created = Families.objects.update_or_create(
+                year_text = self.year_text,
+                purdy_text = newPurdyText,
+                genes_text = newGenes,
+                cross = self)
+
+    def create_gene_str(gene_str_one, gene_str_two):
+        #Turn in to dics to allow matching and use of hets
+        gene_dict_one = Crosses.gene_str_to_dict(gene_str_one) 
+        gene_dict_two = Crosses.gene_str_to_dict(gene_str_two) 
+
+        #Sets don't preserve order. A little hacky.
+        search_genes = ["FHB1", "FHB_JT", "H13", "H13B", "BYDV2"]
+        search_genes.extend(list(set(gene_dict_one.keys()) - set(search_genes)))
+        search_genes.extend(list(set(gene_dict_two.keys()) - set(search_genes)))
+        new_gene_str = ""
+    
+        #This is a pretty ugly stretch.
+        for gene in search_genes:
+            print(gene)
+            gene_one = gene_dict_one.get(gene) or ""
+            gene_two = gene_dict_two.get(gene) or ""
+
+            print("Genes:")
+            print(gene_one)
+            print(gene_two)
+
+            #Move on if neither parent has some form of gene
+            if {gene_one, gene_two} != {''}:
+                if gene_one != '':
+                    gene_one_match = re.search("(HET.*)", gene_one.upper())
+                    if gene_one_match is None:
+                        gene_class_one = "HOM"
+                    else:
+                        gene_class_one = gene_one_match.group(1)
+                else:
+                    gene_class_one = ''
+                
+                if gene_two != '':
+                    gene_two_match = re.search("(HET.*)", gene_two.upper())
+                    if gene_two_match is None:
+                        gene_class_two = "HOM"
+                    else:
+                        gene_class_two = gene_two_match.group(1)
+                else:
+                    gene_class_two = ''
+
+                gene_class_set = {gene_class_one, gene_class_two}
+                print(gene_class_set)
+                #Both parents homozygous
+                if gene_class_set == {'HOM'}:
+                    new_gene = gene
+                elif (gene_class_set == {'', 'HOM'} or gene_class_set == {'HET'}):
+                    new_gene = gene + "Het" 
+                #These classes convey uncertainty. You can't go from uncertain to certain.
+                elif (gene_class_set == {'HOM', 'HET'} or gene_class_set == {'HOM', 'HET+'} or
+                     gene_class_set == {'HOM', 'HET-'} or gene_class_set == {'HET', 'HET+'}):
+                    new_gene = gene + "Het+"
+                elif (gene_class_set == {'', 'HET'} or gene_class_set == {'HET', 'HET-'} or 
+                     gene_class_set == {'', 'HET+'} or gene_class_set == {'', 'HET-'}):
+                    new_gene = gene + "Het-"
+                else:
+                    print("Classs " + str(gene_class_set) + " unrecognized.")
+                    new_gene = "Error"
+                
+                if new_gene_str == "":
+                    new_gene_str += new_gene
+                else:
+                    new_gene_str += ", " + new_gene
+
+        return(new_gene_str) 
+
+    def gene_str_to_dict(gene_str):
+        gene_list = re.sub(" ", "", gene_str).split(",")
+        gene_list_unique = [re.sub("[Hh][Ee][Tt]\+*\-*$", "", gene).upper() for gene in gene_list]
+
+        gene_dict = {gene_list_unique[i]: gene_list[i] for i in range(len(gene_list))} 
+
+        return(gene_dict)
 
     def __str__(self):
         return self.cross_id
@@ -70,7 +152,10 @@ class Families(models.Model):
 
     def save(self, *args, **kwargs):
         if self.family_id == "placeholder":
-            self.order_int = Families.cur_year_objects.all().aggregate(models.Max('order_int'))['order_int__max'] + 1
+            if not Families.cur_year_objects.all(): 
+                self.order_int = 1
+            else:
+                self.order_int = Families.cur_year_objects.all().aggregate(models.Max('order_int'))['order_int__max'] + 1
             self.family_id = "LA" + self.year_text[2:4:1] + str(self.order_int).zfill(3)
         super(Families, self).save(*args, **kwargs) 
 
