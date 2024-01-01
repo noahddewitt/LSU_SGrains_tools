@@ -1,16 +1,6 @@
-<div class="table-tools-wrapper">
+{# Add htmx code at top level because submits GET with all forms #}
+<div  class="table-tools-wrapper">
 
-	<label for = "filter-box"
-	       class = "filter-box"> Search table: </label>
-	<input type = "search"
-	       class = "filter-box"
-	       name = "filter"
-	       id = "filter-box"
-	       placeholder = "Filter..."
-	       hx-get="{% url 'germplasm:stocks_table_view' %}"
-	       hx-trigger="keyup delay:500ms, changed, search"
-	       hx-target="div.table-container"
-	       hx-swap="outerHTML">
     <div class = "row">
       <div class = "column">
 	<div class = "half-table">
@@ -21,29 +11,44 @@
       </div>
       <div class = "column">
 	<div class = "table-options">
-	  <select id="gens" name = "gens"
-	          hx-get="{% url 'germplasm:stocks_table_view' %}"
-	          hx-trigger=""
-	          hx-target="div.table-container"
-	          hx-swap="outerHTML">
-	    <option value = "All">All</option>
+	<form id="form" method="GET" action="{% url 'germplasm:new_nursery_view' %}">
+	  <label for = "filter-options-box"
+	         class = "options-box"> Search stocks: </label>
+	  <input type = "search"
+	       class = "filter-options-box"
+	       name = "filter"
+	       id = "filter-options-box"
+	       placeholder = "Filter...">
+	  </br>
+	  <label for = "filter-box"
+	         class = "options-box"> Stock gen: </label>
+	  <select id="gens" name = "gens" class = "select-options-box">
+	    <option value = "">All</option>
 	    <option value = "F1">F1</option>
 	    <option value = "F2">F2</option>
 	    <option value = "F3">F3</option>
 	  </select>
 	  <br/>
-	  <select id="sd_units" name = "sd_units"
-	          hx-get="{% url 'germplasm:stocks_table_view' %}"
-	          hx-trigger=""
-	          hx-target="div.table-container"
-	          hx-swap="outerHTML">
-            <option value = "All"> All </option>
+	  <label for = "sd_units"
+	         class = "options-box"> Stock type: </label>
+	  <select id="sd_units" name = "sd_units" class = "select-options-box">
+            <option value = ""> All </option>
             <option value = "sds"> Seeds </option>
             <option value = "hds"> Heads </option>
             <option value = "g"> Grams </option>
             <option value = "lb"> Pounds </option>
 	  </select>
 	  <br/>
+	  <button hx-get="{% url 'germplasm:stocks_table_view' %}"
+		  hx-include="[name='filter'], [name='gens'], [name='sd_units']"
+	          hx-trigger="click"
+	          hx-target="div.table-container"
+	          hx-swap="outerHTML">
+		  Update Table </button>
+	  <br/>
+            <input type="submit" value = "submit">
+          </form>
+	  
 	  <input> Download CSV </input>
 	  <br/>
 	  <input> Download Labels </input>

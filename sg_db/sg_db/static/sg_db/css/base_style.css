@@ -88,6 +88,25 @@ label.filter-box {
 
 }
 
+label.options-box {
+  background-color: #C2B0D4;
+  width:150px;
+  color: black;
+  font-style: italic;
+  padding: 10.8px;
+  margin-right: 0px;
+  border: none;
+  border-top-left-radius: 4px;
+  border-bottom-left-radius: 4px;
+  float: left;
+
+}
+
+select.select-options-box{
+	border-top-left-radius:0px;
+	border-bottom-left-radius:0px;
+}
+
 input {
   width: 30%;
   padding: 10px;
@@ -101,7 +120,14 @@ input {
 input.filter-box {
   border-bottom-left-radius: 0px;
   border-top-left-radius: 0px;
+}
 
+input.filter-options-box {
+  
+Stock type:
+width: 300px;
+  border-bottom-left-radius: 0px;
+  border-top-left-radius: 0px;
 }
 
 p.detail_info input {
@@ -237,8 +263,7 @@ ol li {
 	left: 15px;
 }
 
-.wrapper .sidebar ul li a{
-
+.wrapper .sidebar ul li {
 	display: block;
 	padding: 13px 30px;
 	border-bottom: 1 px solid #A39AAC;
@@ -249,8 +274,18 @@ ol li {
 	font-weight: 500;
 }
 
-.wrapper .sidebar ul li a:hover,
-.wrapper .sidebar ul li a:active{
+.wrapper .sidebar ul li a{
+	color: #3C1053; 
+}
+
+.wrapper .sidebar ul li ul li {
+        padding-top: 8px;
+	padding-bottom: 8px;
+	font-size: 18px;
+}
+
+.wrapper .sidebar ul li.hover-line:hover,
+.wrapper .sidebar ul li.hover-line:active{
 	color: #461D7C;
 	background: #F1EEDB;
 	border-right: 2px solid #3C1053;

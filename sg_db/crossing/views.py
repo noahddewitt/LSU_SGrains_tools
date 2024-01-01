@@ -70,6 +70,7 @@ def crossesWrapperView(request):
         print("Crosses POST rquest", file = sys.stderr)
         for row in csv.DictReader(rows):
             #Create new dictionary based on dictionary defined by InterCross column names
+            #Should this chunk here be moved to the model.save() function?
             print(row['crossDbId'], file = sys.stderr)
             if int(row['seeds']) > 0:
                 rowStatus = "Set"

@@ -6,7 +6,7 @@ import django_tables2 as tables
 from django.shortcuts import render
 from django.db.models import Q
 
-from .models import Stocks
+from .models import Trials, Experiments, Stocks, Plots
 from .forms import UploadStocksForm
 from .tables import stockTable
 
@@ -34,8 +34,27 @@ def stockWrapperView(request):
 
 
 def stockTableView(request):
+    table = filterStockTable(request)
+    tables.config.RequestConfig(request, paginate={"per_page": 15}).configure(table)
+    return render(request, 'crossing/display_table.html', {"table" : table})
+
+#In most cases this will be fine, but need to add column
+#To seed stock for selected
+def newNurseryView(request):
+
+    print(request.GET.keys())
+    #Temp code here to show that the table object wwas passed succesfully...
+
+
+    #Logic here for importing stocks and making trials...
+    if request.method == 'GET':
+        return render(request, "germplasm/nursery_creation.html")#, {"form": TrialDetailsForm()})
+
+#Will generalize and move to other stocks
+def filterStockTable(request):
     filter_object = Stocks.objects.filter()
 
+    #This can for sure be a for loop,
     if 'filter' in request.GET.keys():
         query_str = request.GET['filter']
         filter_object = filter_object.filter(Q(stock_id__icontains=query_str) | Q(family__family_id__icontains=query_str))
@@ -50,7 +69,5 @@ def stockTableView(request):
         filter_object = filter_object.filter(amount_units = query_str)
 
     table = stockTable(filter_object)
-
-    tables.config.RequestConfig(request, paginate={"per_page": 15}).configure(table)
-    return render(request, 'crossing/display_table.html', {"table" : table})
+    return table
 
