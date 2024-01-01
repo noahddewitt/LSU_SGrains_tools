@@ -184,6 +184,16 @@ select {
 	flex: 50%;
 }
 
+.table-options {
+	margin-left: 30px;
+}
+
+.table-options select {
+	margin-bottom: 20px;
+	width: 150px;
+}
+
+
 ol li {
 	margin: 10px 40px;
 	color: #220730;

@@ -23,5 +23,6 @@ urlpatterns = [
     path("crossing_shiny", TemplateView.as_view(template_name="sg_db/crossing_shiny.html"), name = "crossing_shiny"), 
     path('crossing/', include("crossing.urls")),
     path('tools/', include("tools.urls")),
+    path('germplasm/', include("germplasm.urls")),
     path('admin/', admin.site.urls),
 ]

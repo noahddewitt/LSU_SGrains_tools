@@ -5,6 +5,9 @@
 	margin-bottom: 15px;
 }
 
+.half-table .table {
+	max-width: 50vw;
+}
 
 .table tr td {
 	max-width: 17vw;

@@ -1,7 +1,13 @@
 from django.db import models
 
 class Trials(models.Model):
+    plot_choices = (("Yield", "Yield"),
+                    ("HR", "Headrows"),
+                    ("SP", "Single Plant"),
+                    ("Pot", "Pot"))
+
     trial_id = models.CharField(max_length=40, primary_key = True, verbose_name = "Trial Id")
+    plot_type = models.CharField(max_length = 10, choices = plot_choices, verbose_name = "Plot Type") 
 
     def __str__(self):
         return self.trial_id

@@ -1,0 +1,7 @@
+<p class = "gen-text-column">
+{% if record.amount_units == "sds" or record.amount_units == "hds" %}
+	{{record.amount_decimal | floatformat:0}} {{record.amount_units}}
+{% else %}
+	{{record.amount_decimal}} {{record.amount_units}}
+{% endif %}
+</p>
