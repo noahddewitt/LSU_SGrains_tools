@@ -17,6 +17,7 @@ class WCP_Entries(models.Model):
     desig_text = models.CharField(max_length=200, verbose_name = "Desig")
     purdy_text = models.CharField(max_length=500, verbose_name = "Purdy Pedigree")
     cp_group_text = models.CharField(max_length=200, verbose_name = "Group")
+    source_text = models.CharField(max_length=50, blank = True, verbose_name = "Source")
     genes_text = models.CharField(max_length=500, blank = True, verbose_name = "Genes")
     notes_text = models.CharField(max_length=1000, blank = True, verbose_name = "Notes")
     sample_id_text = models.CharField(max_length=200, blank = True, verbose_name = "Geno Id")

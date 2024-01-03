@@ -92,7 +92,6 @@ label.options-box {
   background-color: #C2B0D4;
   width:150px;
   color: black;
-  font-style: italic;
   padding: 10.8px;
   margin-right: 0px;
   border: none;
@@ -123,9 +122,7 @@ input.filter-box {
 }
 
 input.filter-options-box {
-  
-Stock type:
-width: 300px;
+  width: 300px;
   border-bottom-left-radius: 0px;
   border-top-left-radius: 0px;
 }
@@ -179,6 +176,13 @@ button {
   float: left;
 }
 
+.vertical-seperator {
+	color: #C2B0D4;
+	font-size: xxx-large;
+        text-align: center;
+	padding: 20px;
+}
+
 input.button {
   background-color: #461D7C;
   width: 100px;
@@ -209,6 +213,7 @@ select {
 .column {
 	flex: 50%;
 }
+
 
 .table-options {
 	margin-left: 30px;

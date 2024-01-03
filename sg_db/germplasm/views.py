@@ -38,17 +38,6 @@ def stockTableView(request):
     tables.config.RequestConfig(request, paginate={"per_page": 15}).configure(table)
     return render(request, 'crossing/display_table.html', {"table" : table})
 
-#In most cases this will be fine, but need to add column
-#To seed stock for selected
-def newNurseryView(request):
-
-    print(request.GET.keys())
-    #Temp code here to show that the table object wwas passed succesfully...
-
-
-    #Logic here for importing stocks and making trials...
-    if request.method == 'GET':
-        return render(request, "germplasm/nursery_creation.html")#, {"form": TrialDetailsForm()})
 
 #Will generalize and move to other stocks
 def filterStockTable(request):
@@ -70,4 +59,31 @@ def filterStockTable(request):
 
     table = stockTable(filter_object)
     return table
+
+#In most cases this will be fine, but need to add column
+#To seed stock for selected
+def newNurseryView(request):
+
+    stockFilters = request.GET
+    print("hey")
+    print(stockFilters)
+
+    #Logic here for importing stocks and making trials...
+    #Need to pass on dictionary of GET request to subsequent views...
+    if request.method == 'GET':
+        return render(request, "germplasm/nursery_creation.html", { 'stock_filters' : stockFilters} )#, {"form": TrialDetailsForm()})
+
+def newNurseryFormsView(request):
+    if request.method == 'GET':
+        stockFilters = request.GET
+        #I think that this is a reasonable way to do this. 
+        return render(request, "germplasm/nursery_creation_forms.html", {'upload_form': UploadStocksForm(), 'stock_filters' : stockFilters})
+
+def newNurseryDetailsView(request):
+    print(request.GET.keys())
+    if request.GET['plot-type'] == "HRs":
+        return render(request, "germplasm/nurseries/nursery_headrows.html")
+    elif request.GET['plot-type'] == "Pots":
+        return render(request, "germplasm/nurseries/nursery_headrows.html")
+
 

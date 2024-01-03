@@ -1,0 +1,28 @@
+<div class = "nursery-details">
+  <form id="form" method="POST" action = "">
+	<label for = "check-number" 
+	       class = "options-box"> Check number: </label>
+	<input id = "check-number" type = "number" 
+	       value = "1" min = "0" max = "5"
+	       hx-get = ""
+	       hx-trigger = "load, click changed"
+	       hx-swap = "outerHTML"
+	       hx-target = "div.check-names"> 
+	</br>
+	<div "check-names">
+	<p> Checks: </p>
+	{#think code generating different check text boxes will have to be separate HTML #}
+	</div>
+	</br>
+	<label for = "fill-name"
+	       class = "options-box"> Fill name: </label>
+	<input id = "fill-name" type = "text">
+	</br>
+	<label for = "row-number" 
+	       class = "options-box"> Rows per: </label>
+	<input id = "row-number" type = "number" 
+	       value = "4" min = "0" max = "10">
+	</br>
+	<input type = "submit", value = "Generate"> 
+  </form>
+</div>

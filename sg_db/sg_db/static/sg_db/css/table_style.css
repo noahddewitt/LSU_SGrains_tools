@@ -9,6 +9,10 @@
 	max-width: 50vw;
 }
 
+.third-table .table {
+	max-width: 40vw;
+}
+
 .table tr td {
 	max-width: 17vw;
 	overflow: hidden;
