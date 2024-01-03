@@ -14,8 +14,7 @@
 	  <div class = "vertical-seperator" style="fontsize: x-large;">
 		  &#x25BC;
 	  </div>
-	  <div hx-get="{% url 'germplasm:stocks_table_view' %}" hx-trigger="load" hx-swap="outerHTML">
-		  Error loading table!
+	  <div class = "new-plots-table">
 	  </div>
         </div>
       </div>
@@ -38,6 +37,12 @@
       	      <div class = "nursery-details"> 
 	        <p> Nursery Details </p>
               </div>
+
+	      <button hx-get="{% url 'germplasm:new_nursery_plots_table' %}"
+		      hx-trigger="click"
+		      hx-target="div.new-plots-table"
+		      hx-vals='{}'
+		      hx-swap="outerHTML"> Test Generate </button>
         </div>
       </div>
     </div>

@@ -9,6 +9,7 @@ urlpatterns = [
         path("stocks/stocksTable/tableContent", views.stockTableView, name = "stocks_table_view"),
         path("stocks/genNursery", views.newNurseryView, name = "new_nursery_view"),
         path("stocks/genNursery/forms", views.newNurseryFormsView, name = "new_nursery_forms_view"),
-        path("stocks/genNursery/details", views.newNurseryDetailsView, name = "new_nursery_details")
+        path("stocks/genNursery/details", views.newNurseryDetailsView, name = "new_nursery_details"),
+        path("stocks/genNursery/plotTable", views.newNurseryPlotsTableView, name = "new_nursery_plots_table"),
 
         ]

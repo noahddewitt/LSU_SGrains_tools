@@ -8,7 +8,7 @@ from django.db.models import Q
 
 from .models import Trials, Experiments, Stocks, Plots
 from .forms import UploadStocksForm
-from .tables import stockTable
+from .tables import stockTable, plotTable
 
 
 def stockView(request):
@@ -79,11 +79,52 @@ def newNurseryFormsView(request):
         #I think that this is a reasonable way to do this. 
         return render(request, "germplasm/nursery_creation_forms.html", {'upload_form': UploadStocksForm(), 'stock_filters' : stockFilters})
 
+def newNurseryPlotsTableView(request):
+    #baseTable = filterStockTable(request)
+    baseTable = Stocks.objects.all()
+
+    print(baseTable)
+
+    tempData = [
+            {"stock_id" : "LA151", "source_plot" : "", "family" : "LA24001",
+                "gen_derived_int" : 2, "gen_inbred_int" : 3, "location_text" : "hey", "amount_decimal" : 10.0, "amount_units" : "sds", "entry_fixed" : False}
+
+            ]
+
+    tempData = []
+
+    rowsPerFamily = 1
+
+    for stock in baseTable:
+        for i in range(1, rowsPerFamily+1):
+            print(stock)
+            newPlot = {
+                    "plot_id" : stock.stock_id + "-" + str(i),
+                    "source_stock" : stock,
+                    "family" : stock.family,
+                    "trial" : "Trial",
+                    "experiment" : "Experiment",
+                    "desig_text" : stock.stock_id + "-" + str(i),
+                    "gen_derived_int" : stock.gen_derived_int + 1, #think this set by option
+                    "gen_inbred_int" : stock.gen_inbred_int,
+                    "entry_fixed" : False
+                    } 
+            tempData.append(newPlot)
+
+    print(tempData)
+
+    table = plotTable(tempData)
+
+
+#    tables.config.RequestConfig(request, paginate={"per_page": 15}).configure(table)
+    return render(request, 'crossing/display_table.html', {"table" : table})
+
 def newNurseryDetailsView(request):
     print(request.GET.keys())
     if request.GET['plot-type'] == "HRs":
         return render(request, "germplasm/nurseries/nursery_headrows.html")
     elif request.GET['plot-type'] == "Pots":
         return render(request, "germplasm/nurseries/nursery_headrows.html")
+
 
 
