@@ -1,13 +1,14 @@
 {# Add htmx code at top level because submits GET with all forms #}
 <div  class="table-tools-wrapper">
-
     <div class = "row">
       <div class = "third-table">
         <div class = "column">
 	{#Need to add other filtering params to this #}
 	  <div hx-get="{% url 'germplasm:stocks_table_view' %}" 
 		  hx-trigger="load" 
-		  hx-vals='{"filter" : "{{ stock_filters.filter}}"}'
+		  hx-vals='{"filter" : "{{ stock_filters.filter}}",
+			     "gens" : "{{ stock_filters.gens}}",
+		             "sd_units" : "{{ stock_filters.sd_units}}"}'
 		  hx-swap="outerHTML">
 		  Error loading table!
 	  </div>
@@ -34,17 +35,33 @@
 		      <option value = "Yield">Yield plots</option>
 	      </select>
 	      <br/>
+	      <label for = "starting-plot"
+		     class = "options-box"> Starting plot: </label>
+	      <input id = "starting-plot" name = "starting-plot",
+	      	     class = "options-box", type = "text", value = "1"> 
+
+	      
+	      <br/>
       	      <div class = "nursery-details"> 
 	        <p> Nursery Details </p>
               </div>
 
 	      <button hx-get="{% url 'germplasm:new_nursery_plots_table' %}"
-		      hx-trigger="click"
+		      hx-trigger="every 200ms"
 		      hx-target="div.new-plots-table"
-		      hx-vals='{}'
-		      hx-swap="outerHTML"> Test Generate </button>
+		      hx-include="[name='plot-type'],
+				  [name='starting-plot'],
+				  [name='row-number'],
+		                  [name='check-entry-one'],
+		      	          [name='check-entry-two'],
+		      	          [name='check-entry-three'],
+		      	          [name='check-entry-four'],
+		      	          [name='check-entry-five']"
+                      hx-vals='{"filter" : "{{ stock_filters.filter}}",
+			     "gens" : "{{ stock_filters.gens}}",
+		             "sd_units" : "{{ stock_filters.sd_units}}"}'
+		      hx-swap="innerHTML"> Test Generate </button>
         </div>
       </div>
     </div>
-
 </div>

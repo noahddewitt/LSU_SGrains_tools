@@ -1,0 +1,8 @@
+{% for i in check_number_list %}
+	<label for = "check-entry-{{i}}"
+	       class = "options-box"> Check {{i}} </label>
+	<input id = "check-entry-{{i}}"
+	       name = "check-entry-{{i}}" type = "text">
+	<br/>
+
+{% endfor %}

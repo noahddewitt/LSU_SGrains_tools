@@ -11,5 +11,6 @@ urlpatterns = [
         path("stocks/genNursery/forms", views.newNurseryFormsView, name = "new_nursery_forms_view"),
         path("stocks/genNursery/details", views.newNurseryDetailsView, name = "new_nursery_details"),
         path("stocks/genNursery/plotTable", views.newNurseryPlotsTableView, name = "new_nursery_plots_table"),
+        path("stocks/genNursery/forms/checkForms", views.checkFormsView, name = "check_forms"),
 
         ]

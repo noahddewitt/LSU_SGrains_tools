@@ -40,25 +40,30 @@ def stockTableView(request):
 
 
 #Will generalize and move to other stocks
-def filterStockTable(request):
+def filterStockTable(request, return_table = True):
     filter_object = Stocks.objects.filter()
 
     #This can for sure be a for loop,
     if 'filter' in request.GET.keys():
         query_str = request.GET['filter']
-        filter_object = filter_object.filter(Q(stock_id__icontains=query_str) | Q(family__family_id__icontains=query_str))
+        if query_str != "":
+            filter_object = filter_object.filter(Q(stock_id__icontains=query_str) | Q(family__family_id__icontains=query_str))
 
     if 'gens' in request.GET.keys():
         query_str = request.GET['gens']
-        query_int = int(re.sub("F", "", query_str))
-        filter_object = filter_object.filter(gen_inbred_int = query_int)
+        if query_str != "":
+            query_int = int(re.sub("F", "", query_str))
+            filter_object = filter_object.filter(gen_inbred_int = query_int)
 
     if 'sd_units' in request.GET.keys():
         query_str = request.GET['sd_units']
-        filter_object = filter_object.filter(amount_units = query_str)
-
-    table = stockTable(filter_object)
-    return table
+        if query_str != "":
+            filter_object = filter_object.filter(amount_units = query_str)
+    if return_table:
+        table = stockTable(filter_object)
+        return table
+    else:
+        return filter_object
 
 #In most cases this will be fine, but need to add column
 #To seed stock for selected
@@ -80,41 +85,64 @@ def newNurseryFormsView(request):
         return render(request, "germplasm/nursery_creation_forms.html", {'upload_form': UploadStocksForm(), 'stock_filters' : stockFilters})
 
 def newNurseryPlotsTableView(request):
-    #baseTable = filterStockTable(request)
-    baseTable = Stocks.objects.all()
+    baseTable = filterStockTable(request, return_table = False)
 
     print(baseTable)
+    print(request.GET.keys())
 
-    tempData = [
-            {"stock_id" : "LA151", "source_plot" : "", "family" : "LA24001",
-                "gen_derived_int" : 2, "gen_inbred_int" : 3, "location_text" : "hey", "amount_decimal" : 10.0, "amount_units" : "sds", "entry_fixed" : False}
 
-            ]
+    checkKeys = [key for key in request.GET.keys() if re.match(r'^check-entry', key)]
+    checkLines = [request.GET[value] for value in checkKeys] 
+
+    print(checkLines)
 
     tempData = []
 
-    rowsPerFamily = 1
+    rowsPerFamily = int(request.GET['row-number'])
 
-    for stock in baseTable:
-        for i in range(1, rowsPerFamily+1):
-            print(stock)
-            newPlot = {
-                    "plot_id" : stock.stock_id + "-" + str(i),
+    curPlot = int(request.GET['starting-plot']) 
+
+    if request.GET['plot-type'] == "HRs":
+
+      for stock in baseTable:
+        famRowsAllocated = 0
+        while famRowsAllocated < rowsPerFamily:
+            #CHECK -are we in a plot id that checks could be in?
+            if curPlot in range(1, len(checkLines)+1):
+                newPlot = {
+                    "plot_id" : "WHR24_" + str(curPlot),
+                    "trial" : "WHWR24",
+                    "experiment" : "Experiment",
+                    "desig_text" :  checkLines[curPlot-1],
+                    "entry_fixed" : False
+                    } 
+            else: 
+                newPlot = {
+                    "plot_id" : "WHR24_" + str(curPlot),
                     "source_stock" : stock,
                     "family" : stock.family,
-                    "trial" : "Trial",
+                    "trial" : "WHR24",
                     "experiment" : "Experiment",
-                    "desig_text" : stock.stock_id + "-" + str(i),
-                    "gen_derived_int" : stock.gen_derived_int + 1, #think this set by option
+                    "desig_text" : stock.stock_id + "-" + str(famRowsAllocated + 1),
+                    "gen_derived_int" : stock.gen_inbred_int - 1 , #think this set by option
                     "gen_inbred_int" : stock.gen_inbred_int,
                     "entry_fixed" : False
                     } 
-            tempData.append(newPlot)
+                famRowsAllocated += 1
 
+            tempData.append(newPlot)
+            curPlot += 1 
+
+    elif request.GET['plot-type'] == "Pots":
+        print("Hey")
+
+
+    elif request.GET['plot-type'] == "Yield":
+        print("Hello")
     print(tempData)
 
-    table = plotTable(tempData)
 
+    table = plotTable(tempData)
 
 #    tables.config.RequestConfig(request, paginate={"per_page": 15}).configure(table)
     return render(request, 'crossing/display_table.html', {"table" : table})
@@ -127,4 +155,13 @@ def newNurseryDetailsView(request):
         return render(request, "germplasm/nurseries/nursery_headrows.html")
 
 
+def checkFormsView(request):
+    checkNumber = int(request.GET["check-number"])
+    numberStrs = ["zed", "one", "two", "three", "four",
+                  "five", "six", "seven", "eight", "nine"]
 
+    if checkNumber < 10: #Which it should always be
+        checkNumberList = []
+        for i in range(1, checkNumber+1):
+            checkNumberList.append(numberStrs[i])
+    return render(request, "germplasm/nurseries/check_forms.html", {"check_number_list" : checkNumberList})
