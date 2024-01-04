@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 {% extends "base.html" %}  
 
+{% load static %}
+
 {% block extrastyles %}
 
 <title> Label Generator </title>
@@ -11,8 +13,10 @@
 
 
 <main>
-	<h2> Generate Labels </h2>
+    <h2> Generate Labels </h2>
 
+    <div class = "row">
+      <div class = "column">
 	<form 
 	    action="/tools/labels"
 	    enctype="multipart/form-data"
@@ -26,11 +30,26 @@
 		<p class="detail_info"> {{ field }} </p>
 
 	    {% endfor %}
+	    <button hx-post = "{% url 'tools:display_label_view' %}"
+		    hx-encoding='multipart/form-data'
+	     	    hx-trigger = "click"
+	     	    hx-target = "div.display_label_wrapper"
+		    hx-swap = "outerHTML"> Update </button>
+
 	    <input type="submit" 
 		   class='button'
 	           name = 'upload_files' 
-		   value = "Submit">
+		   value = "Download">
 	</form>
+      </div>
+      <div class = "column">
+	<div class = "display_label_wrapper">
+		<div class = "display_label">
+			<img src = "{% static 'tools/media/blank_lbl.png' %}">
+		</div>
+
+	</div>
+    </div>
 </main>
 
 {% endblock %} 

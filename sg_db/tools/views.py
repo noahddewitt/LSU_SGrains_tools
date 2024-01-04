@@ -1,7 +1,11 @@
 import csv
+import re
+import requests
+import shutil
 
 from datetime import date, datetime
 from io import TextIOWrapper
+from pathlib import Path
 
 from django.shortcuts import render
 
@@ -15,15 +19,75 @@ def lblView(request):
     if request.method == 'GET':
         return render(request, "tools/labels.html", {"label_form": UploadLabelsForm()}) #Merge?
     elif request.method == 'POST':
+        #Bool field not included in post unless True
+        if 'Include_Barcode' in request.POST.keys():
+            include_barcode_bool = True
+        else:
+            include_barcode_bool = False
+
+        times_to_print_int = int(request.POST['Times_To_Print'])
+        
         Labels_File = request.FILES["Labels_File"]
         rows = TextIOWrapper(Labels_File, encoding="utf-8", newline="")
         row_list = []
         for row in csv.DictReader(rows):
            row_list.append(row)
-        return(export_labels(request, "CSV", include_barcode = False, times_to_print = 1, csv_file = row_list))
 
-def export_labels(request, requested_model, include_barcode = True,
-                  include_date = True, times_to_print = 1, csv_file = None):
+        return(export_labels(request, "CSV", include_barcode = include_barcode_bool, times_to_print = times_to_print_int, csv_file = row_list))
+
+#Generate PNG of label string based on labelry API
+def labelDisplayView(request):
+    if 'Include_Barcode' in request.POST.keys():
+        include_barcode_bool = True
+    else:
+        include_barcode_bool = False
+
+    times_to_print_int = int(request.POST['Times_To_Print'])
+        
+    Labels_File = request.FILES["Labels_File"]
+    rows = TextIOWrapper(Labels_File, encoding="utf-8", newline="")
+    
+    requested_model = "CSV" 
+
+    first_row = next(csv.DictReader(rows))
+
+    zpl_str = export_labels(request, requested_model, include_barcode = include_barcode_bool,
+                  include_date = True, times_to_print = times_to_print_int, 
+                  csv_file = first_row, sample_first_entry = True)
+    zpl_str = re.sub("\n", "", zpl_str)
+
+    #Have to create unique file names to avoid static cache
+    labl_date_string = str(datetime.now())
+
+    lbl_path_folder = "sg_db/static/tools/media/"
+    lbl_file_name = "display_lbl" + labl_date_string + ".png"
+
+    lbl_path = lbl_path_folder + lbl_file_name
+
+    #Delete files if present. But I only want to do it *after* refresh.
+    #Path(lbl_path).unlink(missing_ok=True)
+    for file in Path(lbl_path_folder).glob("display_lbl*.png"):
+        file.unlink()
+
+    lbl_files = {'file' : zpl_str}
+    #Can modify label size here
+    lbl_url = 'http://api.labelary.com/v1/printers/8dpmm/labels/2.5x1/0/'
+    lbl_response = requests.post(lbl_url, files = lbl_files, stream = True)
+
+    if lbl_response.status_code == 200:
+        lbl_response.raw.decode_content = True
+        with open(lbl_path, 'wb') as out_file:
+            shutil.copyfileobj(lbl_response.raw, out_file)
+        
+
+        return render(request, "tools/partials/label_display.html", {"label_png" : "tools/media/" + lbl_file_name})
+    else:
+        print('Error: ' + lbl_response.text)
+
+
+def export_labels(request, requested_model, second_row_text = "", include_barcode = True,
+                  include_date = True, times_to_print = 1, csv_file = None, sample_first_entry = False):
+
     response = HttpResponse(content_type = 'text/plain')
 
     if requested_model == "WCP_Entries":
@@ -42,33 +106,47 @@ def export_labels(request, requested_model, include_barcode = True,
     else:
         row_items = csv_file
 
-    for row_item in row_items:
-        if requested_model == "CSV":
-            row_item = [row_item['id'], row_item['row_1'], row_item['row_2']]
-            second_row_text = ""
-        elif requested_model == "WCP_Entries":
-            second_row_text = "Group"
-        else:
-            second_row_text = ""
+    if sample_first_entry == True:
+        row_item = [row_items['id'], row_items['row_1'], row_items['row_2']]
+        new_zpl_str = get_zpl_str(row_item, requested_model = requested_model,
+                second_row_text = second_row_text, labl_date_string = labl_date_string, include_barcode = include_barcode)
+        return new_zpl_str
 
-        for _ in range(times_to_print):
-            response.write("^XA\n")
-            response.write("^CF0,40\n")
-            response.write("^FO10,5^GB490,3,3^FS\n")
-            if requested_model in ["WCP_Entries", "CSV"]:
-                response.write("^FO15,35^FD" + row_item[0] + "^FS\n")
-                response.write("^CF0,20\n")
-                response.write("^FO16,90^FD" + row_item[1] + "^FS\n")
-                response.write("^FO16,125^FD" + second_row_text + row_item[2] + "^FS\n")
-                if include_date == True:
-                    response.write("^FO16,160^FD" + labl_date_string + "^FS\n")
-                if include_barcode == True:
-                    response.write("^FO320,20^BQN,2,7,Q,7^FDQA," + row_item[0] + "^FS\n")
-            response.write("^FO10, 195^GB490,3,3^FS\n")
-            response.write("^XZ\n")
+    else:
+        for row_item in row_items:
+          if requested_model == "CSV":
+              row_item = [row_item['id'], row_item['row_1'], row_item['row_2']]
+              second_row_text = ""
+          elif requested_model == "WCP_Entries":
+              second_row_text = "Group"
+          else:
+              second_row_text = ""
 
-    return response
+          for _ in range(times_to_print):
+              new_zpl_str = get_zpl_str(row_item, requested_model = requested_model, 
+                      second_row_text = second_row_text, labl_date_string = labl_date_string, include_barcode = include_barcode)
+              response.write(new_zpl_str)
 
+        return response
+
+def get_zpl_str(row_item, requested_model, second_row_text = "", labl_date_string = "", include_barcode = False):
+    new_zpl_str = ""
+    new_zpl_str += "^XA\n"
+    new_zpl_str += "^CF0,40\n"
+    new_zpl_str += "^FO10,5^GB490,3,3^FS\n"
+    if requested_model in ["WCP_Entries", "CSV"]:
+       new_zpl_str += "^FO15,35^FD" + row_item[0] + "^FS\n"
+       new_zpl_str += "^CF0,20\n"
+       new_zpl_str += "^FO16,90^FD" + row_item[1] + "^FS\n"
+       new_zpl_str += "^FO16,125^FD" + second_row_text + row_item[2] + "^FS\n"
+       if labl_date_string != "":
+            new_zpl_str += "^FO16,160^FD" + labl_date_string + "^FS\n"
+       if include_barcode == True:
+            new_zpl_str += "^FO320,20^BQN,2,7,Q,7^FDQA," + row_item[0] + "^FS\n"
+    new_zpl_str += "^FO10, 195^GB490,3,3^FS\n"
+    new_zpl_str += "^XZ\n"
+
+    return(new_zpl_str)
 
 def export_csv(request, requested_model):
     response = HttpResponse(content_type='text/csv')
