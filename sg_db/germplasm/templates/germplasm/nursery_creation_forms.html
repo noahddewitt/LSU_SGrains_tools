@@ -4,32 +4,37 @@
       <div class = "third-table">
         <div class = "column">
 	{#Need to add other filtering params to this #}
-	  <div hx-get="{% url 'germplasm:stocks_table_view' %}" 
-		  hx-trigger="load" 
-		  hx-vals='{"filter" : "{{ stock_filters.filter}}",
+	  <div class = "table-fade-wrapper">
+	    <div hx-get="{% url 'germplasm:stocks_table_view' %}" 
+		 hx-trigger="load" 
+		 hx-vals='{"filter" : "{{ stock_filters.filter}}",
 			     "gens" : "{{ stock_filters.gens}}",
-		             "sd_units" : "{{ stock_filters.sd_units}}"}'
-		  hx-swap="outerHTML">
-		  Error loading table!
+		             "sd_units" : "{{ stock_filters.sd_units}}",
+		             "first_n" : "5"}'
+		 hx-swap="outerHTML">
+		 Error loading table!
+	    </div>
+	    <fade/>
 	  </div>
 	  <div class = "vertical-seperator" style="fontsize: x-large;">
 		  &#x25BC;
 	  </div>
-	  <div class = "new-plots-table">
+	  <div class = "table-fade-wrapper">
+	    <div class = "new-plots-table">
+	    </div>
+	    <fade/>
 	  </div>
         </div>
       </div>
       <div class = "column">
         <div class = "table-options">	
 	      <h3> <span> Nursery Options: </span> <h3>
-			      {#  <form id="design-form" name="design-form" method="POST" action="genNursery/plotTable">  #}
 	      <form hx-post="genNursery/plotTable" 
                     hx-vals='{"filter" : "{{ stock_filters.filter}}",
 			     "gens" : "{{ stock_filters.gens}}",
 		             "sd_units" : "{{ stock_filters.sd_units}}"}'
 		    hx-target="div.new-plots-table"
 		    hx-swap="innerHTML">
-		      {# {% csrf_token %} #}
 	      <label for = "plot-type"
 		     class = "options-box"> Trial type: </label>
 
@@ -57,7 +62,7 @@
 	      <input type = "submit", value = "Generate">
 	      </form>
 	      <button hx-get="{% url 'germplasm:new_nursery_plots_table' %}"
-		      hx-trigger="every 200ms"
+		      hx-trigger="every 200s"
 		      hx-target="div.new-plots-table"
 		      hx-include="[name='plot-type'],
 				  [name='starting-plot'],

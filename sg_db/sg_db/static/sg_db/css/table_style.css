@@ -5,6 +5,10 @@
 	margin-bottom: 15px;
 }
 
+.table-fade-wrapper table {
+	box-shadow: 8px 0px 5px -5px rgba(88, 77, 94, 0.1);
+}
+
 .half-table .table {
 	max-width: 50vw;
 }
@@ -84,4 +88,17 @@
 	font-size:large;
 }
 
+fade {
+    margin-top: -95px;
+    bottom: 0px;
+    display: block;
+    position: relative;
+    width: 100%;
+    height: 80px;
+  
+    background-image: linear-gradient(to bottom, 
+        rgba(241, 238, 219, 0.1), 
+        rgba(241, 238, 219, 1)
+    100%);
+}
 

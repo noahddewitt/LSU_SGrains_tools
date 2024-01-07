@@ -29,6 +29,7 @@ def stockWrapperView(request):
 
 def stockTableView(request):
     table = filterStockTable(request)
+
     tables.config.RequestConfig(request, paginate={"per_page": 15}).configure(table)
     return render(request, 'crossing/display_table.html', {"table" : table})
 
@@ -37,6 +38,8 @@ def stockTableView(request):
 def filterStockTable(request, return_table = True):
     filter_object = Stocks.objects.filter()
 
+    print("HERE")
+    print(request.GET.keys())
     #This can for sure be a for loop,
     if 'filter' in request.GET.keys():
         query_str = request.GET['filter']
@@ -54,7 +57,10 @@ def filterStockTable(request, return_table = True):
         if query_str != "":
             filter_object = filter_object.filter(amount_units = query_str)
     if return_table:
-        table = stockTable(filter_object)
+        if 'first_n' in request.GET.keys():
+            table = stockTable(filter_object[:int(request.GET['first_n'])])
+        else:
+            table = stockTable(filter_object)
         return table
     else:
         return filter_object
@@ -159,7 +165,8 @@ def newNurseryPlotsTableView(request):
 
     #Still have to submit tempData on action of a dif form
 
-    newPlotTable = plotTable(tempData)
+    #limited to first 10
+    newPlotTable = plotTable(tempData[:10])
 
     if request.method == 'POST':
         #Create trial as tempData
