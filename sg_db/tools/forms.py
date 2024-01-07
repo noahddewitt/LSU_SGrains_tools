@@ -1,4 +1,5 @@
-from django.forms import IntegerField, FileField, BooleanField, Form, ModelForm, NumberInput
+from django.forms import IntegerField, FileField, BooleanField, DateField, Form, ModelForm, NumberInput, SelectDateWidget
+
 
 
 class UploadLabelsForm(Form):
@@ -7,13 +8,14 @@ class UploadLabelsForm(Form):
 
     Times_To_Print = IntegerField(label = 'Times to print', initial = '1')
     Times_To_Print.widget.attrs.update({'class': 'times-counter',
-                                        'style': 'width:20ch',
+                                        'style': 'width:10ch',
                                         'max': '99',
                                         'min': '1'})
 
     Include_Barcode = BooleanField(label = "Include Barcode?", initial = True, required = False)
+    Include_Barcode.widget.attrs.update({'class': 'check-box'})
 
-    #Date
+    Date_Str = DateField(label = "Date", widget = SelectDateWidget(empty_label="Nothing"))
 
 
 #I believe this is only called by WCP_Entries view

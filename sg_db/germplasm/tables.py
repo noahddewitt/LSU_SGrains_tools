@@ -1,6 +1,6 @@
 import django_tables2 as tables
 
-from .models import Plots, Stocks
+from .models import Plots, Stocks, Trials
 
 class stockTable(tables.Table):
     gen_text = tables.columns.TemplateColumn(template_name = "germplasm/partials/gen_text_column.html", verbose_name = "Gen")
@@ -14,3 +14,6 @@ class plotTable(tables.Table):
     class Meta:
         model = Plots
 
+class trialTable(tables.Table):
+    class Meta:
+        model = Trials

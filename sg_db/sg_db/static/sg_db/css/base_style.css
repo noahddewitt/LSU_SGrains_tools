@@ -159,7 +159,15 @@ input.times-counter {
   font-weight: bold;
   border-radius: 4px;
   float: left;
-	margin-right: 20px;
+  margin-right: 20px;
+  margin-bottom: 10px;
+}
+
+input.check-box {
+	float: left;
+	width: auto;
+	margin-left: 20px;
+	margin-top: 12px;
 	margin-bottom: 30px;
 }
 
@@ -214,6 +222,10 @@ select {
 	flex: 50%;
 }
 
+.column .child-row {
+	display:flex;
+	padding: 4px;
+}
 
 .table-options {
 	margin-left: 30px;

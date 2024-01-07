@@ -6,9 +6,9 @@ import django_tables2 as tables
 from django.shortcuts import render
 from django.db.models import Q
 
-from .models import Trials, Experiments, Stocks, Plots
+from .models import Trials, Stocks, Plots
 from .forms import UploadStocksForm
-from .tables import stockTable, plotTable
+from .tables import stockTable, plotTable, trialTable
 
 
 def stockView(request):
@@ -165,3 +165,37 @@ def checkFormsView(request):
         for i in range(1, checkNumber+1):
             checkNumberList.append(numberStrs[i])
     return render(request, "germplasm/nurseries/check_forms.html", {"check_number_list" : checkNumberList})
+
+
+
+def plotView(request):
+    return render(request, "germplasm/plots_index.html")
+
+def plotWrapperView(request):
+    #I don't think need to add CSV download - in tools view
+    #Need to add CSV download
+    if request.method == 'GET':
+        return render(request, "germplasm/plots_table_wrapper.html")
+
+def plotTableView(request):
+    #Need to generalize this function and make it work here.
+   # table = filterStockTable(request)
+    table = plotTable(Plots.objects.all())
+    tables.config.RequestConfig(request, paginate={"per_page": 15}).configure(table)
+    return render(request, 'crossing/display_table.html', {"table" : table})
+
+def trialView(request):
+    return render(request, "germplasm/trials_index.html")
+
+def trialWrapperView(request):
+    #I don't think need to add CSV download - in tools view
+    #Need to add CSV download
+    if request.method == 'GET':
+        return render(request, "germplasm/trials_table_wrapper.html")
+
+def trialTableView(request):
+    #Need to generalize this function and make it work here.
+   # table = filterStockTable(request)
+    table = trialTable(Trials.objects.all())
+    tables.config.RequestConfig(request, paginate={"per_page": 15}).configure(table)
+    return render(request, 'crossing/display_table.html', {"table" : table})

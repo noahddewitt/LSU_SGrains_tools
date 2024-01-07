@@ -1,21 +1,14 @@
 from django.db import models
 
+#I previosly had two separate models for trials and experiments,
+#Where experiments were a sub-field. I think that that's over-thinking it.
+#Different HR cuts can just be different trials...
 class Trials(models.Model):
     plot_choices = (("Yield", "Yield"),
                     ("HR", "Headrows"),
                     ("SP", "Single Plant"),
                     ("Pot", "Pot"))
 
-    trial_id = models.CharField(max_length=40, primary_key = True, verbose_name = "Trial Id")
-    plot_type = models.CharField(max_length = 10, choices = plot_choices, verbose_name = "Plot Type") 
-
-    def __str__(self):
-        return self.trial_id
-
-#These should be cuts for HRs, nurs at loc for yield plots..
-#Aka, can be whole trial of sub trial
-#Not deleted, by view filters by default.
-class Experiments(models.Model):
     status_choices = (("Planned", "Planned"),
                       ("Mapped", "Mapped"),
                       ("Packed", "Packed"),
@@ -24,13 +17,19 @@ class Experiments(models.Model):
                       ("Bags Made", "Bags Made"),
                       ("Harvested", "Harvested"))
 
-    experiment_id = models.CharField(max_length=100, primary_key = True, verbose_name = "Experiment Id")
-    trial = models.ForeignKey(Trials, on_delete = models.PROTECT, verbose_name = "Trial")
+    trial_id = models.CharField(max_length=40, primary_key = True, verbose_name = "Trial Id")
+    year_text = models.CharField(max_length=4, verbose_name = "Year")
+    location_text = models.CharField(max_length=3, verbose_name = "Location")
+    plot_type = models.CharField(max_length = 10, choices = plot_choices, verbose_name = "Plot Type") 
+    planting_date = models.DateField(null = True, blank = True, verbose_name = "Planting Date")
+    harvest_date = models.DateField(null = True, blank = True, verbose_name = "Harvest Date")
+    notes_text = models.CharField(max_length = 1000, null = True, blank = True, verbose_name = "Notes")
     status_text = models.CharField(max_length = 10, choices = status_choices, default = "Planned", verbose_name = "Packing Status")
+
 
     def save(self, *args, **kwargs):
         try:
-            old_status = Experiments.objects.get(pk = self.experiment_id)
+            old_status = Trials.objects.get(pk = self.experiment_id)
         except:
             old_status = None
 
@@ -38,7 +37,9 @@ class Experiments(models.Model):
 
         if self.status != old_status:
             if (self.status == "Planted") & (old_status in ["Planned", "Mapped"]):
-                Plots.objects.filter(Experiment = self.experiment_id).update(entry_fixed = True)
+                Plots.objects.filter(Trial = self.experiment_id).update(entry_fixed = True)
+    def __str__(self):
+        return self.trial_id
 
 
 #Defining foreignkey field with string makes field a "lazy" relationship and avoids circular dependency
@@ -75,10 +76,10 @@ class Plots(models.Model):
     source_stock = models.ForeignKey("Stocks", on_delete = models.PROTECT,null = True, blank = True, verbose_name = "Source Stock")
     family = models.ForeignKey('crossing.Families', on_delete = models.PROTECT, verbose_name = "Family")
     trial = models.ForeignKey(Trials, on_delete = models.PROTECT, verbose_name = "Trial")
-    experiment = models.ForeignKey(Experiments, on_delete = models.PROTECT, verbose_name = "Experiment")
     desig_text = models.CharField(max_length=100, verbose_name = "Desig")
     gen_derived_int = models.PositiveIntegerField(verbose_name = "Derived Gen")
     gen_inbred_int = models.PositiveIntegerField(verbose_name = "Inbred Gen")
+    notes_text = models.CharField(max_length = 500, null = True, blank = True, verbose_name = "Notes")
     entry_fixed = models.BooleanField(default = False, verbose_name = "Plot Fixed")
 
     def __str__(self):

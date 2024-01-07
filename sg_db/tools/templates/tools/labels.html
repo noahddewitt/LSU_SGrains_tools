@@ -11,23 +11,25 @@
 
 {% block main %} 
 
-
 <main>
     <h2> Generate Labels </h2>
 
     <div class = "row">
       <div class = "column">
-	<form 
+	<form id = "label-generation-form" 
 	    action="/tools/labels"
 	    enctype="multipart/form-data"
-	    method="post"
-	>
+	    method="post">
 	    {% csrf_token %}
-	    
 	    {% for field in label_form %} 
-
-		<h3 class="detail_header"> {{field.label_tag}} </h3>
-		<p class="detail_info"> {{ field }} </p>
+	      <div class = "child-row">
+		<div class = "child-row-container">
+		  {% if forloop.counter != 1 %}
+	    	    <label class = "options-box"> {{field.label_tag}} </label>		
+		  {% endif %}
+		  {{ field }} 
+		</div>
+	      </div>
 
 	    {% endfor %}
 	    <button hx-post = "{% url 'tools:display_label_view' %}"
