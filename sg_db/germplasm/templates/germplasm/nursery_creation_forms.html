@@ -22,6 +22,14 @@
       <div class = "column">
         <div class = "table-options">	
 	      <h3> <span> Nursery Options: </span> <h3>
+			      {#  <form id="design-form" name="design-form" method="POST" action="genNursery/plotTable">  #}
+	      <form hx-post="genNursery/plotTable" 
+                    hx-vals='{"filter" : "{{ stock_filters.filter}}",
+			     "gens" : "{{ stock_filters.gens}}",
+		             "sd_units" : "{{ stock_filters.sd_units}}"}'
+		    hx-target="div.new-plots-table"
+		    hx-swap="innerHTML">
+		      {# {% csrf_token %} #}
 	      <label for = "plot-type"
 		     class = "options-box"> Trial type: </label>
 
@@ -46,12 +54,15 @@
 	        <p> Nursery Details </p>
               </div>
 
+	      <input type = "submit", value = "Generate">
+	      </form>
 	      <button hx-get="{% url 'germplasm:new_nursery_plots_table' %}"
 		      hx-trigger="every 200ms"
 		      hx-target="div.new-plots-table"
 		      hx-include="[name='plot-type'],
 				  [name='starting-plot'],
 				  [name='row-number'],
+				  [name='pot-number'],
 		                  [name='check-entry-one'],
 		      	          [name='check-entry-two'],
 		      	          [name='check-entry-three'],

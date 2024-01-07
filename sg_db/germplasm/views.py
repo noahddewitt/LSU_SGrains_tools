@@ -7,7 +7,7 @@ from django.shortcuts import render
 from django.db.models import Q
 
 from .models import Trials, Stocks, Plots
-from .forms import UploadStocksForm
+from .forms import UploadStocksForm, TrialEntryForm, PlotEntryForm
 from .tables import stockTable, plotTable, trialTable
 
 
@@ -26,12 +26,6 @@ def stockWrapperView(request):
                 form.save()
 
             return render(request, "crossing/upload_Stocks_Entries.html", {"upload_form": UploadStocksForm(), 'print_form': print_form})
-      #  elif 'download_labels' in request.POST:
-       #     print_form = TimesToPrintForm(request.POST)
-        #    if print_form.is_valid():
-
-         #       return export_labels(request, requested_model = "WCP_Entries", times_to_print = print_form.cleaned_data['Times_To_Print'])
-
 
 def stockTableView(request):
     table = filterStockTable(request)
@@ -87,23 +81,21 @@ def newNurseryFormsView(request):
 def newNurseryPlotsTableView(request):
     baseTable = filterStockTable(request, return_table = False)
 
-    print(baseTable)
-    print(request.GET.keys())
+    if request.method == 'GET':
+        requestDict = request.GET
+    elif request.method == 'POST':
+        requestDict = request.POST
 
-
-    checkKeys = [key for key in request.GET.keys() if re.match(r'^check-entry', key)]
-    checkLines = [request.GET[value] for value in checkKeys] 
-
-    print(checkLines)
+    checkKeys = [key for key in requestDict.keys() if re.match(r'^check-entry', key)]
+    checkLines = [requestDict[value] for value in checkKeys] 
 
     tempData = []
 
-    rowsPerFamily = int(request.GET['row-number'])
+    curPlot = int(requestDict['starting-plot']) 
 
-    curPlot = int(request.GET['starting-plot']) 
-
-    if request.GET['plot-type'] == "HRs":
-
+    #TD -Calculate total length of nursery to get prepend digits
+    if requestDict['plot-type'] == "HRs":
+      rowsPerFamily = int(requestDict['row-number'])
       for stock in baseTable:
         famRowsAllocated = 0
         while famRowsAllocated < rowsPerFamily:
@@ -133,26 +125,80 @@ def newNurseryPlotsTableView(request):
             tempData.append(newPlot)
             curPlot += 1 
 
-    elif request.GET['plot-type'] == "Pots":
-        print("Hey")
+    elif requestDict['plot-type'] == "Pots":
+      potsPerStock = int(requestDict['pot-number'])
+      for stock in baseTable:
+        stockPotsAllocated = 0
+        while stockPotsAllocated < potsPerStock:
+            if potsPerStock > 1:
+                new_desig_text = stock.stock_id + "-" + str(stockPotsAllocated + 1)
+            else:
+                new_desig_text = stock.stock_id
+
+            newPlot = {
+                "plot_id" : "WGHF1_24_" + str(curPlot),
+                "source_stock" : stock,
+                "family" : stock.family,
+                "trial" : "WGHF1_24",
+                "desig_text" : new_desig_text,
+                "gen_derived_int" : stock.gen_inbred_int - 1 , #think this set by option
+                "gen_inbred_int" : stock.gen_inbred_int,
+                "entry_fixed" : False
+                } 
+            stockPotsAllocated += 1
+
+            tempData.append(newPlot)
+            curPlot += 1 
 
 
-    elif request.GET['plot-type'] == "Yield":
+
+    elif requestDict['plot-type'] == "Yield":
         print("Hello")
-    print(tempData)
 
 
-    table = plotTable(tempData)
 
-#    tables.config.RequestConfig(request, paginate={"per_page": 15}).configure(table)
-    return render(request, 'crossing/display_table.html', {"table" : table})
+    #Still have to submit tempData on action of a dif form
+
+    newPlotTable = plotTable(tempData)
+
+    if request.method == 'POST':
+        #Create trial as tempData
+        newTrial = {
+            "trial_id" : "WGHF1_24",
+            "year_text" : "2024",
+            "location_text" : "LAB",
+            "plot_type": "Pot", #Remember use short name here
+            "status_text": "Planned"}
+
+        #save trial row
+        trialForm = TrialEntryForm(newTrial)
+
+        #Don't start building the for loop until we verify this
+        if trialForm.is_valid():
+            trialForm.save()
+
+            for plot in tempData:
+                #Swap out trial field string for foreignkey
+                #plot['trial'] = newTrial['trial_id']
+
+                plotForm = PlotEntryForm(plot)
+
+                if plotForm.is_valid():
+                    plotForm.save()
+
+                else:
+                    print(trialForm.errors)
+        else:
+            print(trialForm.errors)
+
+    return render(request, 'crossing/display_table.html', {"table" : newPlotTable})
 
 def newNurseryDetailsView(request):
     print(request.GET.keys())
     if request.GET['plot-type'] == "HRs":
         return render(request, "germplasm/nurseries/nursery_headrows.html")
     elif request.GET['plot-type'] == "Pots":
-        return render(request, "germplasm/nurseries/nursery_headrows.html")
+        return render(request, "germplasm/nurseries/nursery_pots.html")
 
 
 def checkFormsView(request):

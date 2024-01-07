@@ -6,8 +6,8 @@ from django.db import models
 class Trials(models.Model):
     plot_choices = (("Yield", "Yield"),
                     ("HR", "Headrows"),
-                    ("SP", "Single Plant"),
-                    ("Pot", "Pot"))
+                    ("SP", "Single Plants"),
+                    ("Pot", "Pots"))
 
     status_choices = (("Planned", "Planned"),
                       ("Mapped", "Mapped"),
@@ -29,14 +29,14 @@ class Trials(models.Model):
 
     def save(self, *args, **kwargs):
         try:
-            old_status = Trials.objects.get(pk = self.experiment_id)
+            old_status = Trials.objects.get(pk = self.experiment_id).status_text
         except:
             old_status = None
 
         super().save(*args, **kwargs)
 
-        if self.status != old_status:
-            if (self.status == "Planted") & (old_status in ["Planned", "Mapped"]):
+        if self.status_text != old_status:
+            if (self.status_text == "Planted") & (old_status in ["Planned", "Mapped"]):
                 Plots.objects.filter(Trial = self.experiment_id).update(entry_fixed = True)
     def __str__(self):
         return self.trial_id
