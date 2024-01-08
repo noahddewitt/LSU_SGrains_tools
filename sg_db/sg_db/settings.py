@@ -26,7 +26,7 @@ SECRET_KEY = 'django-insecure-kuv))7t-tid&pu4fs()9(8&rp5sgt!x@0dp^2r%enr)bet%@ga
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['130.39.214.43', 'smallgrains_workstation.agcenter.lsu.edu','localhost', '127.0.0.1']
 
 
 # Application definition
@@ -41,9 +41,9 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'django_htmx',
+#    'django_htmx',
     'django_tables2',
-    'crispy_forms',
+#    'crispy_forms',
     'sg_db',
 ]
 
@@ -55,7 +55,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'django_htmx.middleware.HtmxMiddleware',
+#    'django_htmx.middleware.HtmxMiddleware',
 ]
 
 ROOT_URLCONF = 'sg_db.urls'
