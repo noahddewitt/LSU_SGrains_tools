@@ -33,7 +33,7 @@
                     hx-vals='{"filter" : "{{ stock_filters.filter}}",
 			     "gens" : "{{ stock_filters.gens}}",
 		             "sd_units" : "{{ stock_filters.sd_units}}"}'
-		    hx-target="div.new-plots-table"
+		    hx-target="div.post-status-message"
 		    hx-swap="innerHTML">
 	      <label for = "plot-type"
 		     class = "options-box"> Trial type: </label>
@@ -52,8 +52,6 @@
 		     class = "options-box"> Starting plot: </label>
 	      <input id = "starting-plot" name = "starting-plot",
 	      	     class = "options-box", type = "text", value = "1"> 
-
-	      
 	      <br/>
       	      <div class = "nursery-details"> 
 	        <p> Nursery Details </p>
@@ -61,8 +59,11 @@
 
 	      <input type = "submit", value = "Generate">
 	      </form>
-	      <button hx-get="{% url 'germplasm:new_nursery_plots_table' %}"
-		      hx-trigger="every 200s"
+	      <div class="post-status-message"> <p> Nursery not submitted. </p> 
+	      </div>
+	      <div class = "background-table-regenerate"
+		      hx-get="{% url 'germplasm:new_nursery_plots_table' %}"
+		      hx-trigger="every 200ms"
 		      hx-target="div.new-plots-table"
 		      hx-include="[name='plot-type'],
 				  [name='starting-plot'],
@@ -76,7 +77,8 @@
                       hx-vals='{"filter" : "{{ stock_filters.filter}}",
 			     "gens" : "{{ stock_filters.gens}}",
 		             "sd_units" : "{{ stock_filters.sd_units}}"}'
-		      hx-swap="innerHTML"> Test Generate </button>
+		      hx-swap="innerHTML">
+	      </div>
         </div>
       </div>
     </div>

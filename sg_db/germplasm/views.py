@@ -164,11 +164,12 @@ def newNurseryPlotsTableView(request):
 
 
     #Still have to submit tempData on action of a dif form
-
+    if request.method == 'GET':
     #limited to first 10
-    newPlotTable = plotTable(tempData[:10])
+        newPlotTable = plotTable(tempData[:10])
+        return render(request, 'crossing/display_table.html', {"table" : newPlotTable})
 
-    if request.method == 'POST':
+    elif request.method == 'POST':
         #Create trial as tempData
         newTrial = {
             "trial_id" : "WGHF1_24",
@@ -195,10 +196,11 @@ def newNurseryPlotsTableView(request):
 
                 else:
                     print(trialForm.errors)
+                    return render(request, 'germplasm/partials/fail_div.html')
+            return render(request, 'germplasm/partials/success_div.html')
         else:
             print(trialForm.errors)
-
-    return render(request, 'crossing/display_table.html', {"table" : newPlotTable})
+            return render(request, 'germplasm/partials/fail_div.html')
 
 def newNurseryDetailsView(request):
     print(request.GET.keys())
