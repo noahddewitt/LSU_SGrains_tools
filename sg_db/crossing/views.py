@@ -25,21 +25,19 @@ def wcpView(request):
 
 def wcpWrapperView(request):
     if request.method == 'GET':
-        return render(request, "crossing/wcp_table_wrapper.html", {'upload_form': UploadWCPForm(), 'print_form': TimesToPrintForm()})
+        return render(request, "crossing/wcp_table_wrapper.html", {'upload_form': UploadWCPForm()})
     elif request.method == 'POST':
-        if 'upload_files' in request.POST: #I'm not 100% sure why this works
-            WCP_Entries_File = request.FILES["WCP_Entries_File"]
-            rows = TextIOWrapper(WCP_Entries_File, encoding="utf-8", newline="")
-            for row in csv.DictReader(rows):
-                form = WCPEntryForm(row)
+        WCP_Entries_File = request.FILES["WCP_Entries_File"]
+        rows = TextIOWrapper(WCP_Entries_File, encoding="utf-8", newline="")
+        for row in csv.DictReader(rows):
+            form = WCPEntryForm(row)
+            if form.is_valid():
                 form.save()
+            else: 
+                print(form.errors)
 
-            return render(request, "crossing/upload_WCP_Entries.html", {"upload_form": UploadWCPForm(), 'print_form': print_form})
-        elif 'download_labels' in request.POST:
-            print_form = TimesToPrintForm(request.POST)
-            if print_form.is_valid():
-                
-                return export_labels(request, requested_model = "WCP_Entries", times_to_print = print_form.cleaned_data['Times_To_Print'])
+        return render(request, "crossing/wcp_index.html")
+       # return render(request, "crossing/upload_WCP_Entries.html", {"upload_form": UploadWCPForm()})
 
 def wcpTableView(request):
     if 'filter' in request.GET.keys():

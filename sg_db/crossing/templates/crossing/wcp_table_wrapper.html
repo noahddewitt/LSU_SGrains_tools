@@ -17,12 +17,12 @@
 	</div>
 
 	<form style="display: inline" 
-	      action="/crossing/export/csv/WCP_Entries" 
+	      action="/tools/export/csv/WCP_Entries" 
 	      method="get">
 		<button>Download CSV</button>
 	</form>
 
-	<form action="/crossing/entries"
+	<form action="/crossing/entries/entriesTable"
 	      enctype="multipart/form-data"
 	      method="post">
 	      {% csrf_token %}
