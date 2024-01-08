@@ -13,7 +13,7 @@ library(ggplot2)
 #Debug
 if (!interactive()) sink(stderr(), type = "output")
 
-djangoRoot <- "/home/noah/Documents/django_work/sg_db/"
+djangoRoot <- "/data/sg_db/LSU_SGrains_tools/sg_db/"
 
 ##############Shiny application ################
 

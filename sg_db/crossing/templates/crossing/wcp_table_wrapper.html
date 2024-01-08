@@ -30,17 +30,7 @@
 		      <input type = "submit"
 		     class = 'button'
 	             name = 'upload_files'
-		     value = "Submit">
+		     value = "Upload">
 	</form>
 
-	<form action="/crossing/entries"
-	      enctype="multipart/form-data"
-	      method="post">
-		{% csrf_token %}
-		{{ print_form }}
-		<input type ='submit' 
-		       class = 'button'
-		       name = 'download_labels' 
-		       value = 'Download'>
-	</form>
 </div>
