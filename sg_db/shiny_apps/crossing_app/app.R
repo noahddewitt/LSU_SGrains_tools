@@ -19,9 +19,59 @@ djangoRoot <- "/data/sg_db/LSU_SGrains_tools/sg_db/"
 
 #Render crossing matrix plot using available males
 
-crossingPlot <- function(lineMat) {
+getCrossInfo <- function(lineMat, wcpInfo, crossesMade) {
+  #Remember that eventually crossesMade should be much larger than lineMat
+  #Two directions cross can go
+  madeCombos <- unique(rbind(cbind(crossesMade$parent_one_id, crossesMade$parent_two_id), 
+                             cbind(crossesMade$parent_two_id, crossesMade$parent_one_id)))
+  
+  wcpNames <- wcpInfo$desig_text
+  names(wcpNames) <- wcpInfo$wcp_id
+  
+  idLineMat <- lineMat[, c(1:2)]
+  idLineMat$P1 <- names(wcpNames)[match(idLineMat$P1, wcpNames)]
+  idLineMat$P2 <- names(wcpNames)[match(idLineMat$P2, wcpNames)]
+  #potCombos <- unique(rbind(cbind(lineMat$P1, lineMat$P2), cbind(lineMat$P2, lineMat$P1)))
+  
+  lineMat$Status <- as.character(paste0(idLineMat$P1, idLineMat$P2) %in% paste0(madeCombos[,1], madeCombos[,2]))
+  
+  #Unless I *Really* messed something up, the original lineMat should be same order as original.
+  for (i in c(1:nrow(lineMat))) {
+    #Check for cross status
+    if (lineMat$Status[i] == "FALSE") {
+      lineMat$Status[i] <- ""
+    } else {
+      crossInfo <- crossesMade[crossesMade$parent_one_id == idLineMat$P1[i] & crossesMade$parent_two_id == idLineMat$P2[i],]
+      if (nrow(crossInfo) == 0) {
+        crossInfo <- crossesMade[crossesMade$parent_one_id == idLineMat$P2[i] & crossesMade$parent_two_id == idLineMat$P1[i],]
+      }
+      lineMat$Status[i] <- crossInfo$status_text
+    }
+    #Check for group conflict
+    p1Info <- wcpInfo[wcpInfo$wcp_id == idLineMat$P1[i], ]$cp_group_text
+    p2Info <- wcpInfo[wcpInfo$wcp_id == idLineMat$P2[i], ]$cp_group_text
+    if (((p1Info == "G") & (p2Info != "A")) | ((p2Info == "G") & (p1Info != "A"))) {
+      lineMat$UC[i] <- -1
+    }
+  }
+  return(lineMat)
+}
+
+crossingPlot <- function(lineMat, wcpInfo, crossesMade) {
+  if (nrow(lineMat) > 0) {
+    lineMat <- getCrossInfo(lineMat, wcpInfo, crossesMade)
+    lineMat$Status <- ifelse(lineMat$Status == "", "", 
+                           ifelse(lineMat$Status == "Failed", "X", "O"))
+  } else {
+    #Otherwise throws error
+    lineMat[1, ] <- NA
+    lineMat$Status <- NA
+    lineMat <- lineMat[-1, ]
+  }
+  #Get info for lines with zero
   ggplot(lineMat, aes(x = as.factor(P1), y = as.factor(P2), fill = UC)) + 
   geom_tile(color = "black", show.legend = F) +
+  geom_text(aes(label = Status), color = "grey", size = 20) +
   xlab("Available Males") +
   ylab("Available Females") +
   scale_fill_gradient2(low = "#8F3418", mid = "#FFFFFF", high = "#3C1053", na.value = "#FFFFFF", limits = c(-2, 3)) + #May have to adjust limits, prevent color shifts as lines added/removed
@@ -292,11 +342,12 @@ server <- function(input, output, session) {
     ) 
   ) 
   
+  #Get matrix of available lines, also send info on already made crosses.
   output$xingPlot = renderPlot({crossingPlot(getAvailMat(
     aMales = availableLines$males,
     aFmles = availableLines$fmles,
     priorMat = longPriorMat
-  ))})
+  ), wcp_Entries, wcp_Xs)})
  
   
   output$crossData = renderDT(
