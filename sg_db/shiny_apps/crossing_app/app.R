@@ -11,7 +11,7 @@ library(ggplot2)
 ##Okay, here's where I access the django model. I'll have to mess with this in production
 
 #Debug
-if (!interactive()) sink(stderr(), type = "output")
+#if (!interactive()) sink(stderr(), type = "output")
 
 djangoRoot <- "/data/sg_db/LSU_SGrains_tools/sg_db/"
 
@@ -229,8 +229,8 @@ server <- function(input, output, session) {
     crossIndx <- longPriorMat[(longPriorMat$P1 == xName) & (longPriorMat$P2 == yName), ]$selIndex
     crossIndx <- round(crossIndx, 2)
 
-    mEno <- wcp_Entries[wcp_Entries$desig_text == xName, ]$eno_text
-    fEno <- wcp_Entries[wcp_Entries$desig_text == yName, ]$eno_text
+    mEno <- wcp_Entries[wcp_Entries$desig_text == xName, ]$eno_int
+    fEno <- wcp_Entries[wcp_Entries$desig_text == yName, ]$eno_int
 
     xId <- gsub("_", "", paste0(mEno, "@", fEno))
 

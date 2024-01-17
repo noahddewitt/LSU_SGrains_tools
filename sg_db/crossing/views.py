@@ -70,13 +70,14 @@ def crossesWrapperView(request):
             #Create new dictionary based on dictionary defined by InterCross column names
             #Should this chunk here be moved to the model.save() function?
             print(row['crossDbId'], file = sys.stderr)
-            if int(row['seeds']) > 0:
-                rowStatus = "Set"
-            elif int(row['seeds']) < 0:
+            #99 used as code for failure
+            if int(row['seeds']) == 0:
+                rowStatus = "Made"
+            elif int(row['seeds']) == 99:
                 row['seeds'] = 0
                 rowStatus = "Failed"
-            elif int(row['seeds']) == 0:
-                rowStatus = "Made"
+            elif int(row['seeds']) > 0:
+                rowStatus = "Set"
 
             crossTime =  datetime.strptime(row['timestamp'], "%Y-%m-%d_%H_%M_%S_%f")
 
