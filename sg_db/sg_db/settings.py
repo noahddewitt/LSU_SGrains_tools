@@ -26,7 +26,7 @@ SECRET_KEY = 'django-insecure-kuv))7t-tid&pu4fs()9(8&rp5sgt!x@0dp^2r%enr)bet%@ga
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['130.39.214.43', 'sgbreedbase.agcenter.lsu.edu', 'localhost', '127.0.0.1']
+ALLOWED_HOSTS = ['130.39.214.43', 'smallgrains.agcenter.lsu.edu', 'sgbreedbase.agcenter.lsu.edu', 'localhost', '127.0.0.1']
 
 
 # Application definition

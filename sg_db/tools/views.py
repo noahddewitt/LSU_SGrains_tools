@@ -59,7 +59,7 @@ def labelDisplayView(request):
     #Have to create unique file names to avoid static cache
     labl_date_string = str(datetime.now())
 
-    lbl_path_folder = "sg_db/static/tools/media/"
+    lbl_path_folder = "/var/www/sg_db/static/tools/media/"
     lbl_file_name = "display_lbl" + labl_date_string + ".png"
 
     lbl_path = lbl_path_folder + lbl_file_name

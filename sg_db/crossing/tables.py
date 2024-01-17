@@ -9,7 +9,7 @@ class wcpTable(tables.Table):
 
     class Meta:
         model = WCP_Entries
-        exclude = ("year_text", )
+        exclude = ("year_text", "source_text")
 
 class crossesTable(tables.Table):
     status_text = tables.columns.TemplateColumn(template_name = "crossing/partials/cross_status_column.html")
