@@ -19,6 +19,11 @@ class CrossesEntryForm(ModelForm):
         fields = ["cross_id", "year_text", "parent_one", "parent_two", "cross_date", 
                   "crosser_text", "status_text", "seed_int"]
 
+class CrossesUpdateStatusForm(ModelForm):
+    class Meta:
+        model = Crosses 
+        fields = ["status_text", "seed_int"]
+
 class UploadCrossesForm(Form):
     Crosses_File = FileField(label = '')
     Crosses_File.widget.attrs.update({'class': 'file-upload'})

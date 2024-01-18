@@ -50,9 +50,8 @@ class Crosses(models.Model):
 
         super().save(*args, **kwargs)
 
-        if self.status_text == "Set":
-            if (old_status is None) or (old_status == "Made"): 
-                self.create_families()
+        if self.status_text == "Set" and old_status != "Set":
+            self.create_families()
 
 
     def create_families(self):

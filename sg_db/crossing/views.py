@@ -15,7 +15,7 @@ from django.db.models import Q
 
 from .models import WCP_Entries, Crosses, Families
 from .tables import wcpTable, crossesTable, familiesTable
-from .forms import WCPEntryForm, UploadWCPForm, CrossesEntryForm, UploadCrossesForm, FamiliesEntryForm
+from .forms import WCPEntryForm, UploadWCPForm, CrossesEntryForm, CrossesUpdateStatusForm, UploadCrossesForm, FamiliesEntryForm
 from tools.forms import TimesToPrintForm
 
 from django.views.generic.base import View
@@ -37,7 +37,6 @@ def wcpWrapperView(request):
                 print(form.errors)
 
         return render(request, "crossing/wcp_index.html")
-       # return render(request, "crossing/upload_WCP_Entries.html", {"upload_form": UploadWCPForm()})
 
 def wcpTableView(request):
     if 'filter' in request.GET.keys():
@@ -62,14 +61,11 @@ def crossesWrapperView(request):
     if request.method == 'GET':
         return render(request, "crossing/crosses_table_wrapper.html", {"form": UploadCrossesForm()})
     elif request.method == 'POST':
-        print("TEST")
         Crosses_File = request.FILES["Crosses_File"]
         rows = TextIOWrapper(Crosses_File, encoding="utf-8", newline="")
-        print("Crosses POST rquest", file = sys.stderr)
         for row in csv.DictReader(rows):
-            #Create new dictionary based on dictionary defined by InterCross column names
             #Should this chunk here be moved to the model.save() function?
-            print(row['crossDbId'], file = sys.stderr)
+
             #99 used as code for failure
             if int(row['seeds']) == 0:
                 rowStatus = "Made"
@@ -79,27 +75,33 @@ def crossesWrapperView(request):
             elif int(row['seeds']) > 0:
                 rowStatus = "Set"
 
-            crossTime =  datetime.strptime(row['timestamp'], "%Y-%m-%d_%H_%M_%S_%f")
-
-            #TODO - Get year from two parents. 
-            curYear = "2024"
-            
-            modRow = {'cross_id' : row['crossDbId'],
-                      'year_text' : curYear,
-                      'parent_one' : row['femaleObsUnitDbId'], 
-                      'parent_two' : row['maleObsUnitDbId'], 
-                      'cross_date' : crossTime, 
-                      'crosser_text' : row['person'],
-                      'status_text' : rowStatus,
-                      'seed_int' : int(row['seeds'])}
 
             #If the row already exists, update with new data. 
             if Crosses.objects.filter(cross_id = row['crossDbId']).exists():
                 existing_cross = Crosses.objects.get(cross_id = row['crossDbId'])
-                form = CrossesEntryForm(modRow, instance = existing_cross)
+                #In this case, the *only* thing we want to update is the seed and status.
+                modStatus = {'status_text' : rowStatus,
+                             'seed_int' : int(row['seeds'])}
+
+                form = CrossesUpdateStatusForm(modStatus, instance = existing_cross)
                 form.save()
 
             else:
+                crossTime =  datetime.strptime(row['timestamp'], "%Y-%m-%d_%H_%M_%S_%f")
+
+                #TODO - Get year from two parents. 
+                curYear = "2024"
+            
+                #Create new dictionary based on dictionary defined by InterCross column names
+                modRow = {'cross_id' : row['crossDbId'],
+                          'year_text' : curYear,
+                          'parent_one' : row['femaleObsUnitDbId'], 
+                          'parent_two' : row['maleObsUnitDbId'], 
+                          'cross_date' : crossTime, 
+                          'crosser_text' : row['person'],
+                          'status_text' : rowStatus,
+                          'seed_int' : int(row['seeds'])}
+
                 form = CrossesEntryForm(modRow)
 
                 if form.is_valid():
@@ -109,7 +111,6 @@ def crossesWrapperView(request):
 def crossesTableView(request):
     if 'filter' in request.GET.keys():
         query_str = request.GET['filter']
-        print(query_str)
         table = crossesTable(Crosses.objects.filter(
             Q(cross_id__icontains=query_str) | 
             Q(parent_one__desig_text__icontains=query_str) |
@@ -152,7 +153,6 @@ def entryDetail(request, id_str):
         curForm = CrossesEntryForm
         htmlPath = "crossing/crossDetail.html"
     elif re.match(r'^LA', id_str):
-        #Change this later to go to families table
         curModel = Families 
         curForm = FamiliesEntryForm
         htmlPath = "crossing/familyDetail.html"
