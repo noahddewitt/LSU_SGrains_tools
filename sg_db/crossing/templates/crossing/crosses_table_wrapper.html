@@ -17,7 +17,7 @@
 	</div>
 
 	<form style="display: inline"
-	      action="/tools/export/csv/Crosses" 
+	      action="{% url 'tools:export_csv' 'Crosses'" 
 	      method = "get">
 		<button> Download CSV </button>
 	</form>

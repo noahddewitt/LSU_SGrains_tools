@@ -29,13 +29,17 @@ class WCP_Entries(models.Model):
         return self.desig_text
 
 class Crosses(models.Model):
+    status_choices = (("Set", "Set"),
+                      ("Made", "Made"),
+                      ("Failed", "Failed"))
+
     cross_id = models.CharField(max_length=200, primary_key = True, verbose_name = "Cross Id")
     year_text = models.CharField(max_length=4, verbose_name = "Year")
     parent_one = models.ForeignKey(WCP_Entries, on_delete = models.PROTECT,related_name = 'parent_one', verbose_name = "Parent One")
     parent_two = models.ForeignKey(WCP_Entries, on_delete = models.PROTECT,related_name = 'parent_two', verbose_name = "Parent Two")
     cross_date = models.DateTimeField(verbose_name = "Crossing Date")
     crosser_text = models.CharField(max_length = 10, verbose_name = "Crosser")
-    status_text = models.CharField(max_length = 10, default = "Made", verbose_name = "Status")
+    status_text = models.CharField(max_length = 10, default = "Made", choices = status_choices, verbose_name = "Status")
     seed_int = models.IntegerField(default = 0, verbose_name = "Seed")
 
     def save(self, *args, **kwargs):
