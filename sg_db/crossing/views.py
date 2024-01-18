@@ -41,7 +41,6 @@ def wcpWrapperView(request):
 def wcpTableView(request):
     if 'filter' in request.GET.keys():
         query_str = request.GET['filter']
-        print(query_str)
         table = wcpTable(WCP_Entries.objects.filter(
             Q(wcp_id__icontains=query_str) | 
             Q(desig_text__icontains=query_str) |
@@ -50,6 +49,7 @@ def wcpTableView(request):
             Q(notes_text__icontains=query_str)))
     else:
         table = wcpTable(WCP_Entries.objects.all())
+
     tables.config.RequestConfig(request, paginate={"per_page": 15}).configure(table)
     return render(request, 'crossing/display_table.html', {"table" : table}) 
 
@@ -119,6 +119,8 @@ def crossesTableView(request):
             Q(status_text__icontains=query_str)))
     else:
         table = crossesTable(Crosses.objects.all())
+
+    table.order_by = "cross_id"
     tables.config.RequestConfig(request, paginate={"per_page": 15}).configure(table)
     return render(request, 'crossing/display_table.html', {"table" : table}) 
 
