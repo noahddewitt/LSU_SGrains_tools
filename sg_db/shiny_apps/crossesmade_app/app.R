@@ -16,45 +16,6 @@ djangoRoot <- "/data/sg_db/LSU_SGrains_tools/sg_db/"
 
 ##############Shiny application ################
 
-
-getCrossInfo <- function(lineMat, wcpInfo, crossesMade) {
-  #Remember that eventually crossesMade should be much larger than lineMat
-  #Two directions cross can go
-  madeCombos <- unique(rbind(cbind(crossesMade$parent_one_id, crossesMade$parent_two_id), 
-                             cbind(crossesMade$parent_two_id, crossesMade$parent_one_id)))
-  
-  wcpNames <- wcpInfo$desig_text
-  names(wcpNames) <- wcpInfo$wcp_id
-  
-  idLineMat <- lineMat[, c(1:2)]
-  idLineMat$P1 <- names(wcpNames)[match(idLineMat$P1, wcpNames)]
-  idLineMat$P2 <- names(wcpNames)[match(idLineMat$P2, wcpNames)]
-  #potCombos <- unique(rbind(cbind(lineMat$P1, lineMat$P2), cbind(lineMat$P2, lineMat$P1)))
-  
-  lineMat$Status <- as.character(paste0(idLineMat$P1, idLineMat$P2) %in% paste0(madeCombos[,1], madeCombos[,2]))
-  
-  #Unless I *Really* messed something up, the original lineMat should be same order as original.
-  for (i in c(1:nrow(lineMat))) {
-    #Check for cross status
-    if (lineMat$Status[i] == "FALSE") {
-      lineMat$Status[i] <- ""
-    } else {
-      crossInfo <- crossesMade[crossesMade$parent_one_id == idLineMat$P1[i] & crossesMade$parent_two_id == idLineMat$P2[i],]
-      if (nrow(crossInfo) == 0) {
-        crossInfo <- crossesMade[crossesMade$parent_one_id == idLineMat$P2[i] & crossesMade$parent_two_id == idLineMat$P1[i],]
-      }
-      lineMat$Status[i] <- crossInfo$status_text
-    }
-    #Check for group conflict
-    p1Info <- wcpInfo[wcpInfo$wcp_id == idLineMat$P1[i], ]$cp_group_text
-    p2Info <- wcpInfo[wcpInfo$wcp_id == idLineMat$P2[i], ]$cp_group_text
-    if (((p1Info == "G") & (p2Info != "A")) | ((p2Info == "G") & (p1Info != "A"))) {
-      lineMat$UC[i] <- -1
-    }
-  }
-  return(lineMat)
-}
-
 crossesMadePlot <- function(wcpInfo, crossesMade) {
   #For now, we want to exclude topcrosses
   wcpInfo <- wcpInfo[wcpInfo$cp_group_text != "T", ]
@@ -82,6 +43,8 @@ crossesMadePlot <- function(wcpInfo, crossesMade) {
       if (nrow(crossInfo) > 0) {
         cross_status = crossInfo$status_text
       } else {
+        #The newest cross displays first, so will automatically overlay
+        #New made crosses over older unmade ones.
         if(p1_id == p2_id) {
           cross_status = "Self"
         } else {
@@ -138,7 +101,6 @@ server <- function(input, output, session) {
 }
 
 ui <- fluidPage(
- # titlePanel("Cross Information",windowTitle = "Crossing"),
   tags$style('.container-fluid {
                              background-color: #F1EEDB;
               }
