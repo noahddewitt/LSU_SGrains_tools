@@ -21,6 +21,7 @@ from django.views.generic import TemplateView
 urlpatterns = [
     path("", TemplateView.as_view(template_name="sg_db/index_info.html"), name = "index_info"), #Allows loading template directly without views file
     path("crossing_shiny", TemplateView.as_view(template_name="sg_db/crossing_shiny.html"), name = "crossing_shiny"), 
+    path("crossesmade_shiny", TemplateView.as_view(template_name="sg_db/crossesmade_shiny.html"), name = "crossesmade_shiny"), 
     path('crossing/', include("crossing.urls")),
     path('tools/', include("tools.urls")),
     path('germplasm/', include("germplasm.urls")),

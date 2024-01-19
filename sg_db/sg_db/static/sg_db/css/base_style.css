@@ -75,6 +75,18 @@ p.detail_info {
 	border-radius: 6px;
 }
 
+.styled-link {
+	display: inline;
+	font-style: italic;
+	background-color: #C2B0D4;
+	width:auto;
+	color: black;
+	padding: 10.8px;
+	border: none;
+	border-radius: 4px;
+	float: right;
+}
+
 label.filter-box {
   background-color: #C2B0D4;
   width:auto;
