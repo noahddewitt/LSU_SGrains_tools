@@ -7,17 +7,16 @@ library(RSQLite)
 library(tidyverse)
 library(readxl)
 library(ggplot2)
-
-##Okay, here's where I access the django model. I'll have to mess with this in production
+library(ggnewscale)
 
 #Debug
-#if (!interactive()) sink(stderr(), type = "output")
+if (!interactive()) sink(stderr(), type = "output")
 
 djangoRoot <- "/data/sg_db/LSU_SGrains_tools/sg_db/"
 
 ##############Shiny application ################
 
-#Render crossing matrix plot using available males
+#Render crossing matrix plot using available fmles
 
 getCrossInfo <- function(lineMat, wcpInfo, crossesMade) {
   #Remember that eventually crossesMade should be much larger than lineMat
@@ -31,7 +30,6 @@ getCrossInfo <- function(lineMat, wcpInfo, crossesMade) {
   idLineMat <- lineMat[, c(1:2)]
   idLineMat$P1 <- names(wcpNames)[match(idLineMat$P1, wcpNames)]
   idLineMat$P2 <- names(wcpNames)[match(idLineMat$P2, wcpNames)]
-  #potCombos <- unique(rbind(cbind(lineMat$P1, lineMat$P2), cbind(lineMat$P2, lineMat$P1)))
   
   lineMat$Status <- as.character(paste0(idLineMat$P1, idLineMat$P2) %in% paste0(madeCombos[,1], madeCombos[,2]))
   
@@ -39,7 +37,7 @@ getCrossInfo <- function(lineMat, wcpInfo, crossesMade) {
   for (i in c(1:nrow(lineMat))) {
     #Check for cross status
     if (lineMat$Status[i] == "FALSE") {
-      lineMat$Status[i] <- ""
+      lineMat$Status[i] <- "Unmade"
     } else {
       crossInfo <- crossesMade[crossesMade$parent_one_id == idLineMat$P1[i] & crossesMade$parent_two_id == idLineMat$P2[i],]
       if (nrow(crossInfo) == 0) {
@@ -60,32 +58,40 @@ getCrossInfo <- function(lineMat, wcpInfo, crossesMade) {
 crossingPlot <- function(lineMat, wcpInfo, crossesMade) {
   if (nrow(lineMat) > 0) {
     lineMat <- getCrossInfo(lineMat, wcpInfo, crossesMade)
-    lineMat$Status <- ifelse(lineMat$Status == "", "", 
-                           ifelse(lineMat$Status == "Failed", "X", "O"))
+    lineMat$Status <- as.factor(lineMat$Status)
+
   } else {
     #Otherwise throws error
     lineMat[1, ] <- NA
     lineMat$Status <- NA
     lineMat <- lineMat[-1, ]
   }
+  
+  print(lineMat)
   #Get info for lines with zero
-  ggplot(lineMat, aes(x = as.factor(P1), y = as.factor(P2), fill = UC)) + 
+  crossPlot <- ggplot(lineMat, aes(x = as.factor(P1), y = as.factor(P2), fill = UC)) + 
   geom_tile(color = "black", show.legend = F) +
-  geom_text(aes(label = Status), color = "grey", size = 20) +
-  xlab("Available Males") +
-  ylab("Available Females") +
+  xlab("Available Females") +
+  ylab("Available Males") +
   scale_fill_gradient2(low = "#8F3418", mid = "#FFFFFF", high = "#3C1053", na.value = "#FFFFFF", limits = c(-2, 3)) + #May have to adjust limits, prevent color shifts as lines added/removed
   theme_minimal() +
   theme(plot.background = element_rect(fill = "#F1EEDB", color = NA),
         panel.grid.major = element_blank(),
         panel.grid.minor = element_blank(),
         axis.text.x = element_text(angle = 90, vjust = 0.5))
+  
+  crossPlot + 
+    ggnewscale::new_scale_fill() +
+    geom_tile(aes(fill = Status, width = 0.75, height = 0.4)) +
+    scale_fill_manual(values = c("Made"= alpha(c("#D29F13"), 0.6),"Set"= alpha(c("#0B5D1E"), 0.6), 
+                                 "Failed"= alpha(c("#A44A3F"), 0.6), "Unmade" = alpha(c("#FFFFFF"), 0))) +
+    theme(legend.position="none")
 }
 
 
-getAvailMat <- function(aMales, aFmles, priorMat) {
-  availablePriorMat <- priorMat[priorMat[,1] %in% aMales, ]
-  availablePriorMat <- availablePriorMat[availablePriorMat[,2] %in% aFmles, ]
+getAvailMat <- function(aFmles, aMales, priorMat) {
+  availablePriorMat <- priorMat[priorMat[,1] %in% aFmles, ]
+  availablePriorMat <- availablePriorMat[availablePriorMat[,2] %in% aMales, ]
   
   return(availablePriorMat)
 }
@@ -165,26 +171,26 @@ server <- function(input, output, session) {
   lines_pg <- reactiveVal(1)
   
   availableLines <- reactiveValues(
-    males = c(),
-    fmles = c()
+    fmles = c(),
+    males = c()
   )
   
   
   lineDF <- data.frame(Desig = wcp_Entries$desig_text, 
-                       ms = 0, fs = 0)
+                       fs = 0, ms = 0)
   
   allLines <-  
     reactiveValues(lineDF_Buttons = cbind(Desig = lineDF$Desig, 
-                             mM = incButton(nrow(lineDF), "m", "minus"),
-                             ms = lineDF$ms,
-                             mP = incButton(nrow(lineDF), "m", "plus"),
                              fM = incButton(nrow(lineDF), "f", "minus"),
-                             fs = lineDF$fs,
-                             fP = incButton(nrow(lineDF), "f", "plus")
+                             fs = lineDF$ms,
+                             fP = incButton(nrow(lineDF), "f", "plus"),
+                             mM = incButton(nrow(lineDF), "m", "minus"),
+                             ms = lineDF$fs,
+                             mP = incButton(nrow(lineDF), "m", "plus")
       ))
  
   #Initialize empty, will fill via clicking on heatmap 
-  allXs <- reactiveValues(crossDF_Buttons = data.frame(Male = as.character(), Female = as.character(), Ped = as.character(), Genes = as.character(), k = as.character(), indx = as.numeric(), xM = as.numeric()))
+  allXs <- reactiveValues(crossDF_Buttons = data.frame(Female = as.character(), Male = as.character(), Ped = as.character(), Genes = as.character(), k = as.character(), indx = as.numeric(), xM = as.numeric()))
 	
   observe({
       if (!is.null(input$upload)) { 
@@ -213,51 +219,52 @@ server <- function(input, output, session) {
 
     tempAllLines <- data.frame(isolate(allLines$lineDF_Buttons))
     
-    if (selButtonInfo[1] == "m") {
+    if (selButtonInfo[1] == "f") {
       
-      allLines$lineDF_Buttons[btnRow, 3] <- as.character(as.numeric(tempAllLines$ms[btnRow]) + incVal)
+      allLines$lineDF_Buttons[btnRow, 3] <- as.character(as.numeric(tempAllLines$fs[btnRow]) + incVal)
+      
+      #Update plot of crosses given new fmles lines
+      availableLines$fmles <- allLines$lineDF_Buttons[which(as.numeric(allLines$lineDF_Buttons[, 3]) > 0), 1]
+      availableLines$fmles <- availableLines$fmles[order(availableLines$fmles)]
+      
+    } else if (selButtonInfo[1] == "m") {
+      
+      allLines$lineDF_Buttons[btnRow, 6] <- as.character(as.numeric(tempAllLines$ms[btnRow]) + incVal)
       
       #Update plot of crosses given new males lines
-      availableLines$males <- allLines$lineDF_Buttons[which(as.numeric(allLines$lineDF_Buttons[, 3]) > 0), 1]
+      availableLines$males <- allLines$lineDF_Buttons[which(as.numeric(allLines$lineDF_Buttons[, 6]) > 0), 1]
       availableLines$males <- availableLines$males[order(availableLines$males)]
-      
-    } else if (selButtonInfo[1] == "f") {
-      
-      allLines$lineDF_Buttons[btnRow, 6] <- as.character(as.numeric(tempAllLines$fs[btnRow]) + incVal)
-      
-      #Update plot of crosses given new females lines
-      availableLines$fmles <- allLines$lineDF_Buttons[which(as.numeric(allLines$lineDF_Buttons[, 6]) > 0), 1]
-      availableLines$fmles <- availableLines$fmles[order(availableLines$fmles)]
       
     } else if (selButtonInfo[1] == "x") {
       #This will be a button in the cross table. We remove lines from the "crossing" allocation
-      #And move them back into the available lines for males and females for crossing
+      #And move them back into the available lines for fmles and fefmles for crossing
       #Here's the pain -- have to operate on cross id instead of row
       #(I think hypothetically I now can't make two of the same cross, but that's good)
-      mEno <- gsub("^F1", "F1_", gsub("@.*", "", btnRow)) 
-      fEno <- gsub("^F1", "F1_", gsub(".*@", "", btnRow))
+      fEno <- gsub("^F1", "F1_", gsub("@.*", "", btnRow)) 
+      mEno <- gsub("^F1", "F1_", gsub(".*@", "", btnRow))
 
       tempAllXs <- data.frame(isolate(allXs$crossDF_Buttons))
       
       #Remove row from table. Data.frame keeps it from turning into a vector when nrow = 1
-      crossMatch <- which(grepl(paste0(mEno, "\\: "), tempAllXs[,1]) & 
-			  grepl(paste0(fEno, "\\: "), tempAllXs[,2]))
+      crossMatch <- which(grepl(paste0(fEno, "\\: "), tempAllXs[,1]) & 
+			  grepl(paste0(mEno, "\\: "), tempAllXs[,2]))
 
       allXs$crossDF_Buttons <- data.frame(allXs$crossDF_Buttons[-crossMatch, ])
 
 
       #The button position is now relative to the cross table, not the allLines table.
-      maleRow <- which(tempAllLines[,1] == gsub("^.*\\: ", "", tempAllXs[[crossMatch, 1]]))
-      fmleRow <- which(tempAllLines[,1] == gsub("^.*\\: ", "", tempAllXs[[crossMatch, 2]]))
-      #Return male parent
-      allLines$lineDF_Buttons[maleRow, 3] <- as.character(as.numeric(tempAllLines$ms[maleRow]) + 1)
-      availableLines$males <- allLines$lineDF_Buttons[which(as.numeric(allLines$lineDF_Buttons[, 3]) > 0), 1]
-      availableLines$males <- availableLines$males[order(availableLines$males)]
-
-      #Return Female parent
-      allLines$lineDF_Buttons[fmleRow, 6] <- as.character(as.numeric(tempAllLines$fs[fmleRow]) + 1)
-      availableLines$fmles <- allLines$lineDF_Buttons[which(as.numeric(allLines$lineDF_Buttons[, 6]) > 0), 1]
+      fmleRow <- which(tempAllLines[,1] == gsub("^.*\\: ", "", tempAllXs[[crossMatch, 1]]))
+      maleRow <- which(tempAllLines[,1] == gsub("^.*\\: ", "", tempAllXs[[crossMatch, 2]]))
+      
+      #Return fmle parent
+      allLines$lineDF_Buttons[fmleRow, 3] <- as.character(as.numeric(tempAllLines$fs[fmleRow]) + 1)
+      availableLines$fmles <- allLines$lineDF_Buttons[which(as.numeric(allLines$lineDF_Buttons[, 3]) > 0), 1]
       availableLines$fmles <- availableLines$fmles[order(availableLines$fmles)]
+
+      #Return male parent
+      allLines$lineDF_Buttons[maleRow, 6] <- as.character(as.numeric(tempAllLines$ms[maleRow]) + 1)
+      availableLines$males <- allLines$lineDF_Buttons[which(as.numeric(allLines$lineDF_Buttons[, 6]) > 0), 1]
+      availableLines$males <- availableLines$males[order(availableLines$males)]
       
     } else {
       print("Unexpected button label!")
@@ -265,10 +272,10 @@ server <- function(input, output, session) {
   })
   
   observeEvent(input$heatmap_click, {
-    if (length(availableLines$males) > 0 & length(availableLines$fmles) > 0) {
+    if (length(availableLines$fmles) > 0 & length(availableLines$males) > 0) {
     #Convert x/y coord from plot click into line name
-    xName <- availableLines$males[[round(as.numeric(input$heatmap_click$x))]]
-    yName <- availableLines$fmles[[round(as.numeric(input$heatmap_click$y))]]
+    xName <- availableLines$fmles[[round(as.numeric(input$heatmap_click$x))]]
+    yName <- availableLines$males[[round(as.numeric(input$heatmap_click$y))]]
 
     crossK <- longPriorMat[(longPriorMat$P1 == xName) & (longPriorMat$P2 == yName), ]$K
     crossK <- round(crossK, 2)
@@ -279,25 +286,23 @@ server <- function(input, output, session) {
     crossIndx <- longPriorMat[(longPriorMat$P1 == xName) & (longPriorMat$P2 == yName), ]$selIndex
     crossIndx <- round(crossIndx, 2)
 
-    mEno <- wcp_Entries[wcp_Entries$desig_text == xName, ]$eno_int
-    fEno <- wcp_Entries[wcp_Entries$desig_text == yName, ]$eno_int
+    fEno <- wcp_Entries[wcp_Entries$desig_text == xName, ]$eno_int
+    mEno <- wcp_Entries[wcp_Entries$desig_text == yName, ]$eno_int
 
-    xId <- gsub("_", "", paste0(mEno, "@", fEno))
+    xId <- gsub("_", "", paste0(fEno, "@", mEno))
 
-    mGenes <- wcp_Entries[wcp_Entries$desig_text == xName, ]$genes_text
-    fGenes <- wcp_Entries[wcp_Entries$desig_text == yName, ]$genes_text
+    fGenes <- wcp_Entries[wcp_Entries$desig_text == xName, ]$genes_text
+    mGenes <- wcp_Entries[wcp_Entries$desig_text == yName, ]$genes_text
 
-    mPed <- wcp_Entries[wcp_Entries$desig_text == xName, ]$purdy_text
-    fPed <- wcp_Entries[wcp_Entries$desig_text == yName, ]$purdy_text
+    fPed <- wcp_Entries[wcp_Entries$desig_text == xName, ]$purdy_text
+    mPed <- wcp_Entries[wcp_Entries$desig_text == yName, ]$purdy_text
 
 
     #Create new cross entry in "holding" table
-    #I do actually need to put FHB index...
-    #I NEED TO SYSTEMATICALLY SWITCH ORDER TO PUT F FIRST
-    newCross <-  cbind(Male = paste0(mEno, ": ", xName),
-                       Female = paste0(fEno, ": ", yName),
-		       Ped = paste0(mPed, getPurdyDelim(mPed, fPed), fPed),
-		       Genes = paste0(mGenes, " / ", fGenes),
+    newCross <-  cbind(Female = paste0(fEno, ": ", xName),
+                       Male = paste0(mEno, ": ", yName),
+		       Ped = paste0(fPed, getPurdyDelim(fPed, mPed), mPed),
+		       Genes = paste0(fGenes, " / ", mGenes),
 		       k = as.numeric(crossK),
 		       fIndx = as.numeric(crossFIndx),
 		       indx = as.numeric(crossIndx),
@@ -305,23 +310,23 @@ server <- function(input, output, session) {
    
     allXs$crossDF_Buttons <- rbind(newCross, allXs$crossDF_Buttons)
     
-    #We've "budgeted" for the male and female, so now we have to remove them from the counts
+    #We've "budgeted" for the fmle and fefmle, so now we have to remove them from the counts
     tempAllLines <- data.frame(isolate(allLines$lineDF_Buttons))
     
     #Figure out where we are within the allLines DF
     xCoord <- which(tempAllLines[,1] == xName)
     yCoord <- which(tempAllLines[,1] == yName)
     
-    #Update male data to remove chosen male
-    allLines$lineDF_Buttons[xCoord, 3] <- as.character(as.numeric(tempAllLines$ms[xCoord]) - 1)
-    availableLines$males <- allLines$lineDF_Buttons[which(as.numeric(allLines$lineDF_Buttons[, 3]) > 0), 1]
+    #Update fmle data to remove chosen fmle
+    allLines$lineDF_Buttons[xCoord, 3] <- as.character(as.numeric(tempAllLines$fs[xCoord]) - 1)
+    availableLines$fmles <- allLines$lineDF_Buttons[which(as.numeric(allLines$lineDF_Buttons[, 3]) > 0), 1]
     #Since we're re-drawing from the separate directory, have to re-order
-    availableLines$males <- availableLines$males[order(availableLines$males)]
-    
-    #Update female data to remove chosen female
-    allLines$lineDF_Buttons[yCoord, 6] <- as.character(as.numeric(tempAllLines$fs[yCoord]) - 1)
-    availableLines$fmles <- allLines$lineDF_Buttons[which(as.numeric(allLines$lineDF_Buttons[, 6]) > 0), 1]
     availableLines$fmles <- availableLines$fmles[order(availableLines$fmles)]
+    
+    #Update fefmle data to remove chosen fefmle
+    allLines$lineDF_Buttons[yCoord, 6] <- as.character(as.numeric(tempAllLines$ms[yCoord]) - 1)
+    availableLines$males <- allLines$lineDF_Buttons[which(as.numeric(allLines$lineDF_Buttons[, 6]) > 0), 1]
+    availableLines$males <- availableLines$males[order(availableLines$males)]
     
     }
     }
@@ -344,8 +349,8 @@ server <- function(input, output, session) {
   
   #Get matrix of available lines, also send info on already made crosses.
   output$xingPlot = renderPlot({crossingPlot(getAvailMat(
-    aMales = availableLines$males,
     aFmles = availableLines$fmles,
+    aMales = availableLines$males,
     priorMat = longPriorMat
   ), wcp_Entries, wcp_Xs)})
  
