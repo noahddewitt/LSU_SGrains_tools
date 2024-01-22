@@ -15,6 +15,10 @@ class crossesTable(tables.Table):
     status_text = tables.columns.TemplateColumn(template_name = "crossing/partials/cross_status_column.html")
     cross_date = tables.DateTimeColumn(format ='M d Y')
 
+    #Change verbose names
+    parent_one = tables.Column(verbose_name = "Female Parent")
+    parent_two = tables.Column(verbose_name = "Male Parent")
+
     class Meta:
         model = Crosses
         exclude = ("year_text",)
