@@ -167,7 +167,7 @@ def export_csv(request, requested_model):
     #Gets names of all model fields -- probably better way to do this...
     field_list = []
     for field in cur_model._meta.get_fields():
-        if field.is_relation == False:
+        if field.concrete == True:
             field_list.append(field.name)
 
     writer.writerow(field_list)
