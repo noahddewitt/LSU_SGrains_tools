@@ -63,7 +63,7 @@ def crossesWrapperView(request):
     elif request.method == 'POST':
         Crosses_File = request.FILES["Crosses_File"]
         rows = TextIOWrapper(Crosses_File, encoding="utf-8", newline="")
-        for row in reversed(csv.DictReader(rows)):
+        for row in reversed(list(csv.DictReader(rows))):
             #Should this chunk here be moved to the model.save() function?
 
             #99 used as code for failure
