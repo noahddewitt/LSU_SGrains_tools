@@ -62,9 +62,6 @@ class Stocks(models.Model):
     entry_fixed = models.BooleanField(default = False, verbose_name = "Stock Fixed")
 
     def save(self, *args, **kwargs):
-        if not self.entry_fixed:
-            if self.amount_decimal > 0:
-                self.entry_fixed = True
         super().save(*args, **kwargs)
 
     def __str__(self):
