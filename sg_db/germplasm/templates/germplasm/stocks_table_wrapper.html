@@ -59,6 +59,15 @@
 	  <input> Download CSV </input>
 	  <br/>
 	  <input> Download Labels </input>
+	  <br/>
+
+          <form hx-post = "{% url 'germplasm:stocks_wrapper_view' %}"
+              hx-encoding = "multipart/form-data"
+              hx-target="div.table-tools-wrapper">
+                {% csrf_token %}
+                {{ upload_form }}
+                <input class = "button" type="submit" value = "Upload">
+          </form>
 	</div>
       </div>
     </div>

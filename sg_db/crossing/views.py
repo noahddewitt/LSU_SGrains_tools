@@ -64,6 +64,7 @@ def crossesWrapperView(request):
         Crosses_File = request.FILES["Crosses_File"]
         rows = TextIOWrapper(Crosses_File, encoding="utf-8", newline="")
         for row in reversed(list(csv.DictReader(rows))):
+            print(row['crossDbId'])
             #Should this chunk here be moved to the model.save() function?
 
             #99 used as code for failure
@@ -87,6 +88,7 @@ def crossesWrapperView(request):
                 form.save()
 
             else:
+                print("test")
                 crossTime =  datetime.strptime(row['timestamp'], "%Y-%m-%d_%H_%M_%S_%f")
 
                 #TODO - Get year from two parents. 
@@ -106,6 +108,8 @@ def crossesWrapperView(request):
 
                 if form.is_valid():
                     form.save()
+                else:
+                    print(form.errors)
         return render(request, "crossing/crosses_table_wrapper.html", {"form": UploadCrossesForm()})
 
 def crossesTableView(request):

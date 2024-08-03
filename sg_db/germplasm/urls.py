@@ -5,6 +5,7 @@ from . import views
 app_name = "germplasm"
 urlpatterns = [
         path("", views.plotView, name = "plots_view"),
+        path("plotsUpload", views.plotUploadView, name = "plots_manual_upload"),
         path("plotsTable", views.plotWrapperView, name = "plots_wrapper_view"),
         path("plotsTable/tableContent", views.plotTableView, name = "plots_table_view"),
         path("stocks", views.stockView, name = "stocks_view"),

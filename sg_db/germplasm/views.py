@@ -1,13 +1,16 @@
 import csv
 import re
 
+from io import TextIOWrapper
+
 import django_tables2 as tables
 
 from django.shortcuts import render
 from django.db.models import Q
 
 from .models import Trials, Stocks, Plots
-from .forms import UploadStocksForm, TrialEntryForm, PlotEntryForm
+from crossing.models import Families
+from .forms import UploadStocksForm, TrialEntryForm, PlotEntryForm, StockEntryForm, UploadPlotsForm
 from .tables import stockTable, plotTable, trialTable
 
 
@@ -18,15 +21,92 @@ def stockWrapperView(request):
     if request.method == 'GET':
         return render(request, "germplasm/stocks_table_wrapper.html", {'upload_form': UploadStocksForm()})
     elif request.method == 'POST':
-        if 'upload_files' in request.POST: #I'm not 100% sure why this works
-            Stocks_Entries_File = request.FILES["Stocks_Entries_File"]
-            rows = TextIOWrapper(Stocks_Entries_File, encoding="utf-8", newline="")
-            for row in csv.DictReader(rows):
-                form = StocksEntryForm(row)
-                form.save()
+        Stocks_File = request.FILES["Stocks_File"]
+        if 'Stocks_File' in request.FILES:
+            ####INCLUDE TYPE OF QUANTITY AS FORM DROP-DOWN
+            stock_units = "hds" #Get stock units
 
-            return render(request, "crossing/upload_Stocks_Entries.html", {"upload_form": UploadStocksForm(), 'print_form': print_form})
+            Stocks_File = request.FILES["Stocks_File"]
+            rows = TextIOWrapper(Stocks_File, encoding="utf-8", newline="")
 
+            #This loop will ingest the CSV, do some cleaning, and output Dict
+            #Use .reader instead of dictreader because use column position instead
+            #All inputs should have stock id in left, amounts in right. header optional.
+
+            new_stocks_dict = {}
+            
+            for row in csv.reader(rows):
+                try: 
+                    #Skip the header and avoid extraneous stuff in the file
+                    stock_amount = float(row[1])
+
+                    plot_bag_name = row[0]
+                    plot_bag_name = plot_bag_name.upper()
+
+                    #Because the barcodes are smaller, print without underscore
+                    plot_bag_name = plot_bag_name.replace(" ", "_")
+
+                    #Check padding with 0's 
+                    if plot_bag_name[1:3] == "HR":
+                        sep_index = plot_bag_name.find("_") + 1
+                        row_str = plot_bag_name[sep_index:len(plot_bag_name)]
+
+                        if len(row_str) < 4:
+                            row_str = row_str.rjust(5, "0")
+                            plot_bag_name = plot_bag_name[0:sep_index] + row_str
+
+                    if Plots.objects.filter(plot_id = plot_bag_name).exists():
+                        new_stocks_dict[plot_bag_name] = stock_amount
+                        print(new_stocks_dict[plot_bag_name])
+
+                    else:
+                        print("ERROR: Plot ID not in DB")
+                        break
+
+                except:
+                    pass
+
+            #Check length of dict is N or N-1 of file?
+            print(new_stocks_dict)
+            for stock_plot_name in new_stocks_dict.keys():
+                stock_amount = new_stocks_dict[stock_plot_name]
+
+                stock_plot = Plots.objects.get(plot_id = stock_plot_name)
+               
+                print(stock_plot)
+                print(stock_plot.family)
+
+                if stock_units == "Heads":
+                    new_gen_derived = stock_plot.gen_inbred_int
+
+                else:
+                    new_gen_derived = stock_plot.gen_derived_int
+
+                new_gen_inbred = stock_plot.gen_inbred_int + 1
+
+                new_stock_id = "S-" + str(stock_plot.plot_id)
+
+                new_stock = {
+                        "stock_id" : new_stock_id,
+                        "source_plot" : stock_plot,
+                        "family" : stock_plot.family,
+                        "gen_derived_int" : new_gen_derived,
+                        "gen_inbred_int" : new_gen_inbred,
+                        "location_text" : "",
+                        "amount_decimal" : stock_amount,
+                        "amount_units" : stock_units,
+                        "entry_fixed" : True
+                }
+
+                form = StockEntryForm(new_stock)
+
+                if form.is_valid():
+                    form.save()
+                else:
+                    print(form.errors)
+
+            return render(request, "germplasm/stocks_table_wrapper.html", {'upload_form': UploadStocksForm()})
+ 
 def stockTableView(request):
     table = filterStockTable(request)
 
@@ -225,6 +305,39 @@ def checkFormsView(request):
 
 def plotView(request):
     return render(request, "germplasm/plots_index.html")
+
+def plotUploadView(request):
+    if request.method == 'GET':
+        return render(request, "germplasm/plots_manual_upload.html", {"upload_form": UploadPlotsForm()})
+    elif request.method == 'POST':
+        Plots_File = request.FILES["Plots_File"]
+        rows = TextIOWrapper(Plots_File, encoding="utf-8", newline="")
+        for row in csv.DictReader(rows):
+            print(row)
+            if not Plots.objects.filter(plot_id = row['plot_id']).exists():
+
+                row_stock = Stocks.objects.get(stock_id = row['source_stock'])
+                row_family = Families.objects.get(family_id = row['family'])
+                row_trial = Trials.objects.get(trial_id = row['trial'])
+
+                modRow = {'plot_id' : row['plot_id'],
+                          'source_stock' : row_stock,
+                          'family' : row_family,
+                          'trial' : row_trial,
+                          'desig_text' : row['desig_text'],
+                          'gen_derived_int' : int(row['gen_derived_int']),
+                          'gen_inbred_int' : int(row['gen_inbred_int']),
+                          'notes_text' : row['notes_text'],
+                          'entry_fixed' : True}
+
+                form = PlotEntryForm(modRow)
+                if form.is_valid():
+                    form.save()
+                else:
+                    print(form.errors)
+        return render(request, "germplasm/plots_manual_upload.html", {"upload_form": UploadPlotsForm()})
+
+
 
 def plotWrapperView(request):
     #I don't think need to add CSV download - in tools view
