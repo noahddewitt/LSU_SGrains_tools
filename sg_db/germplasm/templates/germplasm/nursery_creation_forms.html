@@ -28,15 +28,39 @@
       </div>
       <div class = "column">
         <div class = "table-options">	
-	      <h3> <span> Nursery Options: </span> <h3>
-	      <form hx-post="genNursery/plotTable" 
+	      <h3> <span> New Trial: </span> <h3>
+	      <form hx-post="{% url 'germplasm:new_nursery_plots_table' %}"
+		    hx-include="[name='nursery-name'],
+				  [name='nursery-year'],
+				  [name='plot-type'],
+				  [name='starting-plot'],
+				  [name='row-number'],
+				  [name='pot-number'],
+		                  [name='check-entry-one'],
+		      	          [name='check-entry-two'],
+		      	          [name='check-entry-three'],
+		      	          [name='check-entry-four'],
+		      	          [name='check-entry-five']"
                     hx-vals='{"filter" : "{{ stock_filters.filter}}",
 			     "gens" : "{{ stock_filters.gens}}",
 		             "sd_units" : "{{ stock_filters.sd_units}}"}'
 		    hx-target="div.post-status-message"
 		    hx-swap="innerHTML">
+
+	      <label for = "nursery-name"
+		     class = "options-box"> Trial name: </label>
+
+              <input id = "nursery-name" name = "nursery-name" type = "text" value = "">
+	      <br>
+	      <label for = "nursery-year"
+		     class = "options-box"> Trial year: </label>
+
+              <input id = "nursery-year" name = "nursery-year" type = "number"
+               value = "" min = "2023" max = "2099">
+	      <br>
 	      <label for = "plot-type"
 		     class = "options-box"> Trial type: </label>
+
 
 	      <select id = "plot-type" name = "plot-type" class = "select-options-box" 
 		      hx-get = "{% url 'germplasm:new_nursery_details' %}" 
@@ -47,6 +71,10 @@
 		      <option value = "Pots">Pots</option>
 		      <option value = "Yield">Yield plots</option>
 	      </select>
+
+
+	      <h3> <span> Nursery Options: </span> <h3>
+
 	      <br/>
 	      <label for = "starting-plot"
 		     class = "options-box"> Starting plot: </label>
@@ -59,13 +87,17 @@
 
 	      <input type = "submit", value = "Generate">
 	      </form>
+
 	      <div class="post-status-message"> <p> Nursery not submitted. </p> 
 	      </div>
+
 	      <div class = "background-table-regenerate"
 		      hx-get="{% url 'germplasm:new_nursery_plots_table' %}"
 		      hx-trigger="every 200ms"
 		      hx-target="div.new-plots-table"
-		      hx-include="[name='plot-type'],
+		      hx-include="[name='nursery-name'],
+				  [name='nursery-year'],
+				  [name='plot-type'],
 				  [name='starting-plot'],
 				  [name='row-number'],
 				  [name='pot-number'],

@@ -71,11 +71,11 @@ class Stocks(models.Model):
 class Plots(models.Model):
     plot_id = models.CharField(max_length=40, primary_key = True, verbose_name = "Plot Id")
     source_stock = models.ForeignKey("Stocks", on_delete = models.PROTECT,null = True, blank = True, verbose_name = "Source Stock")
-    family = models.ForeignKey('crossing.Families', on_delete = models.PROTECT, verbose_name = "Family")
+    family = models.ForeignKey('crossing.Families', on_delete = models.PROTECT, null = True, blank = True, verbose_name = "Family")
     trial = models.ForeignKey(Trials, on_delete = models.PROTECT, verbose_name = "Trial")
     desig_text = models.CharField(max_length=100, verbose_name = "Desig")
-    gen_derived_int = models.PositiveIntegerField(verbose_name = "Derived Gen")
-    gen_inbred_int = models.PositiveIntegerField(verbose_name = "Inbred Gen")
+    gen_derived_int = models.PositiveIntegerField(verbose_name = "Derived Gen", null = True, blank = True)
+    gen_inbred_int = models.PositiveIntegerField(verbose_name = "Inbred Gen", null = True, blank = True)
     notes_text = models.CharField(max_length = 500, null = True, blank = True, verbose_name = "Notes")
     entry_fixed = models.BooleanField(default = False, verbose_name = "Plot Fixed")
 

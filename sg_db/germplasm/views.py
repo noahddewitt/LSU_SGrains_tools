@@ -118,26 +118,33 @@ def stockTableView(request):
 def filterStockTable(request, return_table = True):
     filter_object = Stocks.objects.filter()
 
+
+    if request.method == 'GET':
+        requestDict = request.GET
+
+    elif request.method == 'POST':
+        requestDict = request.POST
+
     print("HERE")
     print(request.GET.keys())
     #This can for sure be a for loop,
-    if 'filter' in request.GET.keys():
-        query_str = request.GET['filter']
+    if 'filter' in requestDict.keys():
+        query_str = requestDict['filter']
         if query_str != "":
             filter_object = filter_object.filter(Q(stock_id__icontains=query_str) | Q(family__family_id__icontains=query_str))
 
-    if 'gens' in request.GET.keys():
-        query_str = request.GET['gens']
+    if 'gens' in requestDict.keys():
+        query_str = requestDict['gens']
         if query_str != "":
             query_int = int(re.sub("F", "", query_str))
             filter_object = filter_object.filter(gen_inbred_int = query_int)
 
-    if 'sd_units' in request.GET.keys():
-        query_str = request.GET['sd_units']
+    if 'sd_units' in requestDict.keys():
+        query_str = requestDict['sd_units']
         if query_str != "":
             filter_object = filter_object.filter(amount_units = query_str)
     if return_table:
-        if 'first_n' in request.GET.keys():
+        if 'first_n' in requestDict.keys():
             table = stockTable(filter_object[:int(request.GET['first_n'])])
         else:
             table = stockTable(filter_object)
@@ -171,6 +178,7 @@ def newNurseryPlotsTableView(request):
         requestDict = request.GET
     elif request.method == 'POST':
         requestDict = request.POST
+        print("RECEIVED A POST REQUEST")
 
     checkKeys = [key for key in requestDict.keys() if re.match(r'^check-entry', key)]
     checkLines = [requestDict[value] for value in checkKeys] 
@@ -179,31 +187,38 @@ def newNurseryPlotsTableView(request):
 
     curPlot = int(requestDict['starting-plot']) 
 
+    print(requestDict.keys())
+
     #TD -Calculate total length of nursery to get prepend digits
     if requestDict['plot-type'] == "HRs":
       rowsPerFamily = int(requestDict['row-number'])
       for stock in baseTable:
+        print(stock.stock_id)
         famRowsAllocated = 0
         while famRowsAllocated < rowsPerFamily:
+            curPlotStr = "_" + str(curPlot).rjust(5, "0")
+
+
             #CHECK -are we in a plot id that checks could be in?
             if curPlot in range(1, len(checkLines)+1):
                 newPlot = {
-                    "plot_id" : "WHR24_" + str(curPlot),
-                    "trial" : "WHWR24",
+                    "plot_id" : requestDict['nursery-name'] + str(curPlotStr),
+                    "trial" : requestDict['nursery-name'],
                     "experiment" : "Experiment",
                     "desig_text" :  checkLines[curPlot-1],
                     "entry_fixed" : False
                     } 
             else: 
                 newPlot = {
-                    "plot_id" : "WHR24_" + str(curPlot),
+                    "plot_id" : requestDict['nursery-name'] + str(curPlotStr),
                     "source_stock" : stock,
                     "family" : stock.family,
-                    "trial" : "WHR24",
+                    "trial" : requestDict['nursery-name'],
                     "experiment" : "Experiment",
-                    "desig_text" : stock.stock_id + "-" + str(famRowsAllocated + 1),
-                    "gen_derived_int" : stock.gen_inbred_int - 1 , #think this set by option
-                    "gen_inbred_int" : stock.gen_inbred_int,
+                    #"desig_text" : stock.stock_id + "-" + str(famRowsAllocated + 1),
+                    "desig_text" : stock.source_plot.desig_text + "-" + str(famRowsAllocated + 1),
+                    "gen_derived_int" : stock.gen_inbred_int , #think this set by option
+                    "gen_inbred_int" : stock.gen_inbred_int + 1,
                     "entry_fixed" : False
                     } 
                 famRowsAllocated += 1
@@ -250,12 +265,17 @@ def newNurseryPlotsTableView(request):
         return render(request, 'crossing/display_table.html', {"table" : newPlotTable})
 
     elif request.method == 'POST':
+        
+        print("Hello now!")
+
+        plot_type_dict = {"Pots" : "Pot", "Yield" : "Yield", "HRs" : "HR", "SPs" : "SP"}
+
         #Create trial as tempData
         newTrial = {
-            "trial_id" : "WGHF1_24",
-            "year_text" : "2024",
+            "trial_id" : requestDict['nursery-name'],
+            "year_text" : requestDict['nursery-year'],
             "location_text" : "LAB",
-            "plot_type": "Pot", #Remember use short name here
+            "plot_type": plot_type_dict[requestDict['plot-type']], #Remember use short name here
             "status_text": "Planned"}
 
         #save trial row
@@ -263,8 +283,13 @@ def newNurseryPlotsTableView(request):
 
         #Don't start building the for loop until we verify this
         if trialForm.is_valid():
+
+            #I think we want to make sure ALL plots are valid before saving anything.
             trialForm.save()
 
+            #Print issue
+
+            #The issue here is now it will start submitting I think.
             for plot in tempData:
                 #Swap out trial field string for foreignkey
                 #plot['trial'] = newTrial['trial_id']
