@@ -1,5 +1,6 @@
 <div class="table-tools-wrapper">
 
+
 	<label for = "filter-box"
 	       class = "filter-box"> Search table: </label>
 	<input type = "search"
@@ -23,10 +24,12 @@
 	</form>
 
 	<form style="display: inline" 
-	      action="/crossing/export/csv/Plots" 
-	      method="get">
+	      hx-trigger="click"
+	      hx-get="{% url 'tools:htmx_csv_view' %}"
+	      hx-vals='{ "requested_model" : "Plots" }'
+	      hx-include="[name='filter']"
+	      >
 		<button>Download CSV</button>
 	</form>
-
 
 </div>

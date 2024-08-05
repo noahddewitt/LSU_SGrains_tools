@@ -125,8 +125,6 @@ def filterStockTable(request, return_table = True):
     elif request.method == 'POST':
         requestDict = request.POST
 
-    print("HERE")
-    print(request.GET.keys())
     #This can for sure be a for loop,
     if 'filter' in requestDict.keys():
         query_str = requestDict['filter']
@@ -265,9 +263,6 @@ def newNurseryPlotsTableView(request):
         return render(request, 'crossing/display_table.html', {"table" : newPlotTable})
 
     elif request.method == 'POST':
-        
-        print("Hello now!")
-
         plot_type_dict = {"Pots" : "Pot", "Yield" : "Yield", "HRs" : "HR", "SPs" : "SP"}
 
         #Create trial as tempData
@@ -363,7 +358,6 @@ def plotUploadView(request):
         return render(request, "germplasm/plots_manual_upload.html", {"upload_form": UploadPlotsForm()})
 
 
-
 def plotWrapperView(request):
     #I don't think need to add CSV download - in tools view
     #Need to add CSV download
@@ -372,10 +366,28 @@ def plotWrapperView(request):
 
 def plotTableView(request):
     #Need to generalize this function and make it work here.
-   # table = filterStockTable(request)
-    table = plotTable(Plots.objects.all())
+    #table = filterPlotTable(request)
+    table = plotTable(filterPlotTable(request))
     tables.config.RequestConfig(request, paginate={"per_page": 15}).configure(table)
     return render(request, 'crossing/display_table.html', {"table" : table})
+
+def filterPlotTable(request):
+    filter_object = Plots.objects.filter()
+
+    if request.method == 'GET':
+        requestDict = request.GET
+
+    elif request.method == 'POST':
+        requestDict = request.POST
+
+    filter_object = Plots.objects.all()
+
+    if 'filter' in requestDict.keys():
+        query_str = requestDict['filter']
+        if query_str != "":
+            filter_object = filter_object.filter(Q(plot_id__icontains=query_str) | Q(trial__trial_id__icontains=query_str))
+    
+    return filter_object
 
 def trialView(request):
     return render(request, "germplasm/trials_index.html")

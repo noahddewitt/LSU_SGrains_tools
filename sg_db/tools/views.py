@@ -8,12 +8,14 @@ from io import TextIOWrapper
 from pathlib import Path
 
 from django.shortcuts import render
+from django.db.models import Q
 
 from django.http import HttpResponse
 
 from .forms import UploadLabelsForm
 
 from crossing.models import WCP_Entries, Crosses, Families
+from germplasm.models import Plots, Stocks, Trials
 
 def lblView(request):
     if request.method == 'GET':
@@ -148,7 +150,23 @@ def get_zpl_str(row_item, requested_model, second_row_text = "", labl_date_strin
 
     return(new_zpl_str)
 
-def export_csv(request, requested_model):
+#Because htmx just does ajax requests, to do a CSV download have to redirect
+def htmx_csv_view(request):
+    requested_model = request.GET["requested_model"]
+    filter_str = request.GET["filter"]
+
+    #If filter box is empty
+    if filter_str == "":
+        csv_url = "/tools/export/csv/" + requested_model
+    else:
+        csv_url = "/tools/export/csv/" + requested_model + "/" + filter_str
+
+    response = HttpResponse()
+    response["HX-Redirect"] = csv_url
+
+    return(response)
+
+def export_csv(request, requested_model, filter_str = ""):
     response = HttpResponse(content_type='text/csv')
 
     if requested_model == "WCP_Entries":
@@ -157,6 +175,13 @@ def export_csv(request, requested_model):
             cur_model = Crosses
     elif requested_model == "Families":
             cur_model = Families
+    elif requested_model == "Plots":
+            cur_model = Plots 
+    elif requested_model == "Stocks":
+            cur_model = Stocks 
+    elif requested_model == "Trials":
+            cur_model = Trials
+
 
     date_string = date.today().strftime("%b%d%y")
     file_name = requested_model + "_" + date_string + ".csv"
@@ -172,7 +197,14 @@ def export_csv(request, requested_model):
 
     writer.writerow(field_list)
 
-    row_items = cur_model.objects.all().values_list(*field_list)
+    print(filter_str)
+    if filter_str != "":
+        filter_object = cur_model.objects.all()
+        sel_rows = filter_object.filter(Q(plot_id__icontains=filter_str) | Q(trial__trial_id__icontains=filter_str))
+        row_items = sel_rows.values_list(*field_list)
+    else:
+        row_items = cur_model.objects.all().values_list(*field_list)
+            
     for row_item in row_items:
         writer.writerow(row_item)
 
