@@ -25,3 +25,7 @@ class UploadStocksForm(Form):
 class UploadPlotsForm(Form):
     Plots_File = FileField(label = '')
     Plots_File.widget.attrs.update({'class': 'file-upload'})
+    
+class UploadTrialsForm(Form):
+    Trials_File = FileField(label = '')
+    Trials_File.widget.attrs.update({'class': 'file-upload'})

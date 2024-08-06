@@ -10,7 +10,7 @@ from django.db.models import Q
 
 from .models import Trials, Stocks, Plots
 from crossing.models import Families
-from .forms import UploadStocksForm, TrialEntryForm, PlotEntryForm, StockEntryForm, UploadPlotsForm
+from .forms import UploadStocksForm, TrialEntryForm, PlotEntryForm, StockEntryForm, UploadPlotsForm, UploadTrialsForm
 from .tables import stockTable, plotTable, trialTable
 
 
@@ -405,3 +405,28 @@ def trialTableView(request):
     table = trialTable(Trials.objects.all())
     tables.config.RequestConfig(request, paginate={"per_page": 15}).configure(table)
     return render(request, 'crossing/display_table.html', {"table" : table})
+
+def trialUploadView(request):
+    if request.method == 'GET':
+        return render(request, "germplasm/trials_manual_upload.html", {"upload_form": UploadTrialsForm()})
+    elif request.method == 'POST':
+        Trials_File = request.FILES["Trials_File"]
+        rows = TextIOWrapper(Trials_File, encoding="utf-8", newline="")
+        for row in csv.DictReader(rows):
+            print(row)
+            if not Trials.objects.filter(trial_id = row['trial_id']).exists():
+
+                modRow = {'trial_id' : row['trial_id'],
+                          'year_text' : row['year_text'],
+                          'location_text' : row['location_text'],
+                          'plot_type' : row['plot_type'],
+                          'planting_date' : row['planting_date'],
+                          'harvest_date' : row['harvest_date'],
+                          'status_text' : row['status_text']}
+
+                form = TrialEntryForm(modRow)
+                if form.is_valid():
+                    form.save()
+                else:
+                    print(form.errors)
+        return render(request, "germplasm/trials_manual_upload.html", {"upload_form": UploadPlotsForm()})
