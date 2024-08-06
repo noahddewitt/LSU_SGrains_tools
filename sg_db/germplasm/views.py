@@ -186,6 +186,7 @@ def newNurseryPlotsTableView(request):
     curPlot = int(requestDict['starting-plot']) 
 
     print(requestDict.keys())
+    short_year_str = requestDict['nursery-year'][2:4]
 
     #TD -Calculate total length of nursery to get prepend digits
     if requestDict['plot-type'] == "HRs":
@@ -200,7 +201,7 @@ def newNurseryPlotsTableView(request):
             #CHECK -are we in a plot id that checks could be in?
             if curPlot in range(1, len(checkLines)+1):
                 newPlot = {
-                    "plot_id" : requestDict['nursery-name'] + str(curPlotStr),
+                    "plot_id" : "WHR" + short_year_str + str(curPlotStr),
                     "trial" : requestDict['nursery-name'],
                     "experiment" : "Experiment",
                     "desig_text" :  checkLines[curPlot-1],
@@ -208,12 +209,11 @@ def newNurseryPlotsTableView(request):
                     } 
             else: 
                 newPlot = {
-                    "plot_id" : requestDict['nursery-name'] + str(curPlotStr),
+                    "plot_id" : "WHR" + short_year_str + str(curPlotStr),
                     "source_stock" : stock,
                     "family" : stock.family,
                     "trial" : requestDict['nursery-name'],
                     "experiment" : "Experiment",
-                    #"desig_text" : stock.stock_id + "-" + str(famRowsAllocated + 1),
                     "desig_text" : stock.source_plot.desig_text + "-" + str(famRowsAllocated + 1),
                     "gen_derived_int" : stock.gen_inbred_int , #think this set by option
                     "gen_inbred_int" : stock.gen_inbred_int + 1,
@@ -320,7 +320,6 @@ def checkFormsView(request):
         for i in range(1, checkNumber+1):
             checkNumberList.append(numberStrs[i])
     return render(request, "germplasm/nurseries/check_forms.html", {"check_number_list" : checkNumberList})
-
 
 
 def plotView(request):
