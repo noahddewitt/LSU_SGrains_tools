@@ -182,8 +182,11 @@ def newNurseryPlotsTableView(request):
     checkLines = [requestDict[value] for value in checkKeys] 
 
     tempData = []
+    
+    starting_plot = int(requestDict['starting-plot']) 
 
-    curPlot = int(requestDict['starting-plot']) 
+    #inconsistent variable naming format in this view 
+    curPlot = starting_plot
 
     print(requestDict.keys())
     short_year_str = requestDict['nursery-year'][2:4]
@@ -192,19 +195,18 @@ def newNurseryPlotsTableView(request):
     if requestDict['plot-type'] == "HRs":
       rowsPerFamily = int(requestDict['row-number'])
       for stock in baseTable:
-        print(stock.stock_id)
         famRowsAllocated = 0
         while famRowsAllocated < rowsPerFamily:
             curPlotStr = "_" + str(curPlot).rjust(5, "0")
 
-
             #CHECK -are we in a plot id that checks could be in?
-            if curPlot in range(1, len(checkLines)+1):
+            range_pos = (curPlot - starting_plot) % 50 #our HRs are 50 wide
+            if range_pos in range(0, len(checkLines)):
                 newPlot = {
                     "plot_id" : "WHR" + short_year_str + str(curPlotStr),
                     "trial" : requestDict['nursery-name'],
                     "experiment" : "Experiment",
-                    "desig_text" :  checkLines[curPlot-1],
+                    "desig_text" :  checkLines[curPlot-starting_plot],
                     "entry_fixed" : False
                     } 
             else: 
