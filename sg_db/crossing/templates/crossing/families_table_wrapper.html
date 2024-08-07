@@ -22,5 +22,17 @@
 		<button> Download CSV </button>
 	</form>
 
+	<form action="/crossing/families/familiesTable"
+              enctype="multipart/form-data"
+              method="post">
+              {% csrf_token %}
+              {{ upload_form }}
+                      <input type = "submit"
+                     class = 'button'
+                     name = 'upload_files'
+                     value = "Upload">
+        </form>
+
+
 </div>
 

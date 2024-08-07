@@ -15,7 +15,7 @@ from django.db.models import Q
 
 from .models import WCP_Entries, Crosses, Families
 from .tables import wcpTable, crossesTable, familiesTable
-from .forms import WCPEntryForm, UploadWCPForm, CrossesEntryForm, CrossesUpdateStatusForm, UploadCrossesForm, FamiliesEntryForm
+from .forms import WCPEntryForm, UploadWCPForm, CrossesEntryForm, CrossesUpdateStatusForm, UploadCrossesForm, FamiliesEntryForm, UploadFamilyForm
 from tools.forms import TimesToPrintForm
 
 from django.views.generic.base import View
@@ -88,12 +88,16 @@ def crossesWrapperView(request):
                 form.save()
 
             else:
-                print("test")
-                crossTime =  datetime.strptime(row['timestamp'], "%Y-%m-%d_%H_%M_%S_%f")
+                for date_format in ("%Y-%m-%d_%H_%M_%S_%f", "%m/%d/%Y",  "%m/%d/%y", "%m-%d-%Y"):
+                    try:
+                        crossTime =  datetime.strptime(row['timestamp'], date_format)
+                    except:
+                        pass
 
-                #TODO - Get year from two parents. 
-                curYear = "2024"
-            
+
+                #Get year from parent one ID
+                curYear = "20" + re.search("(\d{2})_", row['femaleObsUnitDbId']).group(1)
+
                 #Create new dictionary based on dictionary defined by InterCross column names
                 modRow = {'cross_id' : row['crossDbId'],
                           'year_text' : curYear,
@@ -133,7 +137,19 @@ def familiesView(request):
 
 def familiesWrapperView(request):
     if request.method == 'GET':
-        return render(request, "crossing/families_table_wrapper.html")
+        return render(request, "crossing/families_table_wrapper.html", {'upload_form': UploadFamilyForm()})
+    elif request.method == 'POST':
+        Families_File = request.FILES["Families_File"]
+        rows = TextIOWrapper(Families_File, encoding="utf-8", newline="")
+        for row in csv.DictReader(rows):
+            form = FamiliesEntryForm(row)
+            if form.is_valid():
+                form.save()
+            else: 
+                print(form.errors)
+                print("Error with family: " + row['family_id'] + " and cross: " + row['cross'])
+
+        return render(request, "crossing/wcp_index.html")
 
 def familiesTableView(request):
     if 'filter' in request.GET.keys():

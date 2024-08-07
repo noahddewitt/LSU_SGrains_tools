@@ -416,15 +416,16 @@ def trialUploadView(request):
             print(row)
             if not Trials.objects.filter(trial_id = row['trial_id']).exists():
 
-                modRow = {'trial_id' : row['trial_id'],
-                          'year_text' : row['year_text'],
-                          'location_text' : row['location_text'],
-                          'plot_type' : row['plot_type'],
-                          'planting_date' : row['planting_date'],
-                          'harvest_date' : row['harvest_date'],
-                          'status_text' : row['status_text']}
+#                modRow = {'trial_id' : row['trial_id'],
+ #@                         'year_text' : row['year_text'],
+   #                       'location_text' : row['location_text'],
+    #                      'plot_type' : row['plot_type'],
+     #                     'planting_date' : row['planting_date'],
+      #                    'harvest_date' : row['harvest_date'],
+       #                   'status_text' : row['status_text']}
 
-                form = TrialEntryForm(modRow)
+        #        form = TrialEntryForm(modRow)
+                form = TrialEntryForm(row)
                 if form.is_valid():
                     form.save()
                 else:

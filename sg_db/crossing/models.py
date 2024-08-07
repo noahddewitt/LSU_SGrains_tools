@@ -1,14 +1,16 @@
 import re
 
+from datetime import date
+
 from django.db import models
 from django.utils import timezone
 
 from germplasm.models import Stocks
 
 class CurrentYearManager(models.Manager):
-    crossingYear = "2024" #Modify this as modification of datetime 
+    crossingYear = "2023" #Modify this as modification of datetime 
     def get_queryset(self):
-        return super().get_queryset().filter(year_text="2024")
+        return super().get_queryset().filter(year_text="2023")
 
 class WCP_Entries(models.Model):
     wcp_id = models.CharField(max_length = 20, primary_key = True, verbose_name = "WCP Id")
@@ -37,8 +39,8 @@ class Crosses(models.Model):
     year_text = models.CharField(max_length=4, verbose_name = "Year")
     parent_one = models.ForeignKey(WCP_Entries, on_delete = models.PROTECT,related_name = 'parent_one', verbose_name = "Parent One")
     parent_two = models.ForeignKey(WCP_Entries, on_delete = models.PROTECT,related_name = 'parent_two', verbose_name = "Parent Two")
-    cross_date = models.DateTimeField(verbose_name = "Crossing Date")
-    crosser_text = models.CharField(max_length = 10, verbose_name = "Crosser")
+    cross_date = models.DateTimeField(verbose_name = "Crossing Date", blank = True, null = True)
+    crosser_text = models.CharField(max_length = 10, verbose_name = "Crosser", blank = True, null = True)
     status_text = models.CharField(max_length = 10, default = "Made", choices = status_choices, verbose_name = "Status")
     seed_int = models.IntegerField(default = 0, verbose_name = "Seed")
 
@@ -50,7 +52,14 @@ class Crosses(models.Model):
 
         super().save(*args, **kwargs)
 
-        if self.status_text == "Set" and old_status != "Set":
+        #Allow historic data without creating new families
+        if int(self.year_text) < date.today().year:
+            create_family = False
+        else:
+            create_family = True
+
+        print(create_family)
+        if self.status_text == "Set" and old_status != "Set" and create_family == True:
             self.create_families()
 
 

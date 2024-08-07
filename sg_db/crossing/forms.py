@@ -33,3 +33,6 @@ class FamiliesEntryForm(ModelForm):
         model = Families 
         fields = ["family_id", "purdy_text", "genes_text", "notes_text", 'cross']
 
+class UploadFamilyForm(Form):
+    Families_File = FileField(label = '')
+    Families_File.widget.attrs.update({'class': 'file-upload'})
