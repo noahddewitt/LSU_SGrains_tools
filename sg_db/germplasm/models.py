@@ -56,7 +56,7 @@ class Stocks(models.Model):
     family = models.ForeignKey('crossing.Families', on_delete = models.PROTECT, verbose_name = "Family")
     gen_derived_int = models.PositiveIntegerField(verbose_name = "Derived Gen")
     gen_inbred_int = models.PositiveIntegerField(verbose_name = "Inbred Gen")
-    location_text = models.CharField(max_length=200, verbose_name = "Location")
+    location_text = models.CharField(max_length=200, null = True, blank = True, verbose_name = "Location")
     amount_decimal = models.DecimalField(max_digits = 10, decimal_places = 2, default = 0, verbose_name = "Seed Amount")
     amount_units = models.CharField(max_length = 3, choices = unit_choices, verbose_name = "Seed Units")
     entry_fixed = models.BooleanField(default = False, verbose_name = "Stock Fixed")

@@ -1,6 +1,7 @@
 import csv
 import re
 
+import decimal
 from datetime import date, datetime
 from io import TextIOWrapper
 
@@ -11,7 +12,7 @@ from django.db.models import Q
 
 from .models import Trials, Stocks, Plots
 from crossing.models import Families
-from .forms import UploadStocksForm, TrialEntryForm, PlotEntryForm, StockEntryForm, UploadPlotsForm, UploadTrialsForm
+from .forms import UploadStocksForm, TrialEntryForm, PlotEntryForm, StockEntryForm, UploadPlotsForm, UploadTrialsForm, StockUpdateAmountForm
 from .tables import stockTable, plotTable, trialTable
 
 
@@ -25,7 +26,7 @@ def stockWrapperView(request):
         Stocks_File = request.FILES["Stocks_File"]
         if 'Stocks_File' in request.FILES:
             ####INCLUDE TYPE OF QUANTITY AS FORM DROP-DOWN
-            stock_units = "hds" #Get stock units
+            stock_units = request.POST["sd_units"] #Get stock units
 
             Stocks_File = request.FILES["Stocks_File"]
             rows = TextIOWrapper(Stocks_File, encoding="utf-8", newline="")
@@ -77,7 +78,7 @@ def stockWrapperView(request):
                 print(stock_plot)
                 print(stock_plot.family)
 
-                if stock_units == "Heads":
+                if stock_units == "hds":
                     new_gen_derived = stock_plot.gen_inbred_int
 
                 else:
@@ -171,6 +172,7 @@ def newNurseryFormsView(request):
         return render(request, "germplasm/nursery_creation_forms.html", {'upload_form': UploadStocksForm(), 'stock_filters' : stockFilters})
 
 def newNurseryPlotsTableView(request):
+    print(request)
     baseTable = filterStockTable(request, return_table = False)
 
     if request.method == 'GET':
@@ -200,14 +202,15 @@ def newNurseryPlotsTableView(request):
         while famRowsAllocated < rowsPerFamily:
             curPlotStr = "_" + str(curPlot).rjust(5, "0")
 
-            #CHECK -are we in a plot id that checks could be in?
-            range_pos = (curPlot - starting_plot) % 50 #our HRs are 50 wide
+            #Are we in a plot id that checks could be in?
+            #Our HR ranges are 50 wide!
+            range_pos = (curPlot - starting_plot) % 50
             if range_pos in range(0, len(checkLines)):
                 newPlot = {
                     "plot_id" : "WHR" + short_year_str + str(curPlotStr),
                     "trial" : requestDict['nursery-name'],
                     "experiment" : "Experiment",
-                    "desig_text" :  checkLines[curPlot-starting_plot],
+                    "desig_text" :  checkLines[range_pos],
                     "entry_fixed" : False
                     } 
             else: 
@@ -218,8 +221,8 @@ def newNurseryPlotsTableView(request):
                     "trial" : requestDict['nursery-name'],
                     "experiment" : "Experiment",
                     "desig_text" : stock.source_plot.desig_text + "-" + str(famRowsAllocated + 1),
-                    "gen_derived_int" : stock.gen_inbred_int , #think this set by option
-                    "gen_inbred_int" : stock.gen_inbred_int + 1,
+                    "gen_derived_int" : stock.gen_derived_int , #This is set in *stock* logic
+                    "gen_inbred_int" : stock.gen_inbred_int,
                     "entry_fixed" : False
                     } 
                 famRowsAllocated += 1
@@ -238,12 +241,12 @@ def newNurseryPlotsTableView(request):
                 new_desig_text = stock.stock_id
 
             newPlot = {
-                "plot_id" : "WGHF1_24_" + str(curPlot),
+                "plot_id" : requestDict['nursery-name'] + str(curPlot),
                 "source_stock" : stock,
                 "family" : stock.family,
-                "trial" : "WGHF1_24",
+                "trial" : requestDict['nursery-name'],
                 "desig_text" : new_desig_text,
-                "gen_derived_int" : stock.gen_inbred_int - 1 , #think this set by option
+                "gen_derived_int" : stock.gen_derived_int , #think this set by option
                 "gen_inbred_int" : stock.gen_inbred_int,
                 "entry_fixed" : False
                 } 
@@ -255,8 +258,23 @@ def newNurseryPlotsTableView(request):
 
 
     elif requestDict['plot-type'] == "Yield":
-        print("Hello")
+      nursery_length = len(baseTable)
+      nursery_pad = len(str(nursery_length))
+      for stock in baseTable:
+        curPlotStr = "_" + str(curPlot).rjust(nursery_pad, "0")
+        newPlot = {
+            "plot_id" : requestDict['nursery-name'] + curPlotStr,
+            "source_stock" : stock,
+            "family" : stock.family,
+            "trial" : requestDict['nursery-name'], 
+            "desig_text" : stock.source_plot.desig_text,
+            "gen_derived_int" : stock.gen_derived_int, 
+            "gen_inbred_int" : stock.gen_inbred_int,
+            "entry_fixed" : False
+            } 
 
+        tempData.append(newPlot)
+        curPlot += 1 
 
 
     #Still have to submit tempData on action of a dif form
@@ -282,10 +300,8 @@ def newNurseryPlotsTableView(request):
         #Don't start building the for loop until we verify this
         if trialForm.is_valid():
 
-            #I think we want to make sure ALL plots are valid before saving anything.
+            #Have to save trial to allow dependent plots to be created
             trialForm.save()
-
-            #Print issue
 
             #The issue here is now it will start submitting I think.
             for plot in tempData:
@@ -297,9 +313,22 @@ def newNurseryPlotsTableView(request):
                 if plotForm.is_valid():
                     plotForm.save()
 
+                    #Update seed stock to remove seed
+                    new_amount = stock.amount_decimal - decimal.Decimal(requestDict['seed-amount'])
+                    modStock = {"amount_decimal" : new_amount}
+
+                    stockForm = StockUpdateAmountForm(modStock, instance = stock)
+                    stockForm.save()
+
                 else:
                     print(trialForm.errors)
+
+                    #REMOVE created trial
+                    Trials.objects.filter(id=requestDict['nursery-name']).delete()
+
                     return render(request, 'germplasm/partials/fail_div.html')
+
+
             return render(request, 'germplasm/partials/success_div.html')
         else:
             print(trialForm.errors)
@@ -311,6 +340,8 @@ def newNurseryDetailsView(request):
         return render(request, "germplasm/nurseries/nursery_headrows.html")
     elif request.GET['plot-type'] == "Pots":
         return render(request, "germplasm/nurseries/nursery_pots.html")
+    elif request.GET['plot-type'] == "Yield":
+        return render(request, "germplasm/nurseries/nursery_yield.html")
 
 
 def checkFormsView(request):
@@ -369,8 +400,6 @@ def plotUploadView(request):
 
 
 def plotWrapperView(request):
-    #I don't think need to add CSV download - in tools view
-    #Need to add CSV download
     if request.method == 'GET':
         return render(request, "germplasm/plots_table_wrapper.html")
 
@@ -403,8 +432,6 @@ def trialView(request):
     return render(request, "germplasm/trials_index.html")
 
 def trialWrapperView(request):
-    #I don't think need to add CSV download - in tools view
-    #Need to add CSV download
     if request.method == 'GET':
         return render(request, "germplasm/trials_table_wrapper.html")
 

@@ -12,6 +12,11 @@ class StockEntryForm(ModelForm):
         model = Stocks
         exclude = []
 
+class StockUpdateAmountForm(ModelForm):
+    class Meta:
+        model = Stocks
+        fields = ["amount_decimal"]
+
 class TrialEntryForm(ModelForm):
     class Meta:
         model = Trials
