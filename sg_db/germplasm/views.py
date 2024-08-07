@@ -1,6 +1,7 @@
 import csv
 import re
 
+from datetime import date, datetime
 from io import TextIOWrapper
 
 import django_tables2 as tables
@@ -337,8 +338,16 @@ def plotUploadView(request):
             print(row)
             if not Plots.objects.filter(plot_id = row['plot_id']).exists():
 
-                row_stock = Stocks.objects.get(stock_id = row['source_stock'])
-                row_family = Families.objects.get(family_id = row['family'])
+                if row['source_stock'] != "":
+                    row_stock = Stocks.objects.get(stock_id = row['source_stock'])
+                else:
+                    row_stock = None
+
+                if row['family'] != "":
+                    row_family = Families.objects.get(family_id = row['family'])
+                else:
+                    row_family = None
+
                 row_trial = Trials.objects.get(trial_id = row['trial'])
 
                 modRow = {'plot_id' : row['plot_id'],
@@ -414,20 +423,20 @@ def trialUploadView(request):
         rows = TextIOWrapper(Trials_File, encoding="utf-8", newline="")
         for row in csv.DictReader(rows):
             print(row)
+
+            row['harvest_date'] = datetime.strptime(row['harvest_date'], "%m/%d/%Y")
+            row['planting_date'] = datetime.strptime(row['planting_date'], "%m/%d/%Y")
+
             if not Trials.objects.filter(trial_id = row['trial_id']).exists():
-
-#                modRow = {'trial_id' : row['trial_id'],
- #@                         'year_text' : row['year_text'],
-   #                       'location_text' : row['location_text'],
-    #                      'plot_type' : row['plot_type'],
-     #                     'planting_date' : row['planting_date'],
-      #                    'harvest_date' : row['harvest_date'],
-       #                   'status_text' : row['status_text']}
-
-        #        form = TrialEntryForm(modRow)
                 form = TrialEntryForm(row)
                 if form.is_valid():
                     form.save()
                 else:
                     print(form.errors)
+
+            else:
+                existing_trial = Trials.objects.get(trial_id = row['trial_id'])
+                form = TrialEntryForm(row, instance = existing_trial)
+                form.save()
+
         return render(request, "germplasm/trials_manual_upload.html", {"upload_form": UploadPlotsForm()})

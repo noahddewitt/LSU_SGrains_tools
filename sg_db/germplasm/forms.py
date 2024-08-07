@@ -15,7 +15,7 @@ class StockEntryForm(ModelForm):
 class TrialEntryForm(ModelForm):
     class Meta:
         model = Trials
-        fields = ["trial_id", "year_text", "location_text", "plot_type", "planting_date", "status_text"]
+        fields = ["trial_id", "year_text", "location_text", "plot_type", "planting_date", "harvest_date", "status_text"]
         exclude = []
 
 class UploadStocksForm(Form):
