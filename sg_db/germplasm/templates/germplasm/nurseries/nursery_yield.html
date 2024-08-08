@@ -1,4 +1,24 @@
 <div class = "nursery-details">
+        <label for = "check-number"
+               class = "options-box"> Check #: </label>
+        <input id = "check-number" name = check-number
+               type = "number"
+               value = "1" min = "0" max = "5"
+               hx-get = "{% url 'germplasm:check_forms' %}"
+               hx-trigger = "load, click changed"
+               hx-include = "[name='check-number']"
+               hx-swap = "innerHTML"
+               hx-target = "div.check-names">
+        </br>
+        <div class = "check-names">
+        </div>
+        </br>
+        <label for = "check-every"
+               class = "options-box"> Checks Every: </label>
+        <input id = "check-every" name = "check-every" type = "number"
+               value = "20" min = "5" max = "100">
+	</br>
+	</br>
 	<label for = "seed-amount" 
 	       class = "options-box"> Seed per: </label>
 	<input id = "seed-amount" name = "seed-amount" type = "number" 

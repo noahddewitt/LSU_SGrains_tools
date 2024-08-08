@@ -25,8 +25,8 @@ def stockWrapperView(request):
     elif request.method == 'POST':
         Stocks_File = request.FILES["Stocks_File"]
         if 'Stocks_File' in request.FILES:
-            ####INCLUDE TYPE OF QUANTITY AS FORM DROP-DOWN
-            stock_units = request.POST["sd_units"] #Get stock units
+            #Sd units upload different than sd units for filtering
+            stock_units = request.POST["sd_units_upload"] 
 
             Stocks_File = request.FILES["Stocks_File"]
             rows = TextIOWrapper(Stocks_File, encoding="utf-8", newline="")
@@ -120,7 +120,6 @@ def stockTableView(request):
 def filterStockTable(request, return_table = True):
     filter_object = Stocks.objects.filter()
 
-
     if request.method == 'GET':
         requestDict = request.GET
 
@@ -128,21 +127,23 @@ def filterStockTable(request, return_table = True):
         requestDict = request.POST
 
     #This can for sure be a for loop,
-    if 'filter' in requestDict.keys():
-        query_str = requestDict['filter']
-        if query_str != "":
-            filter_object = filter_object.filter(Q(stock_id__icontains=query_str) | Q(family__family_id__icontains=query_str))
+    print(requestDict)
+    #Progressively add filters based on parameters
+    for filter_var in requestDict.keys():
+        if requestDict[filter_var] != "":
+            if filter_var == "filter":
+                filter_object = filter_object.filter(Q(stock_id__icontains=requestDict[filter_var]) | Q(family__family_id__icontains=requestDict[filter_var]))
 
-    if 'gens' in requestDict.keys():
-        query_str = requestDict['gens']
-        if query_str != "":
-            query_int = int(re.sub("F", "", query_str))
-            filter_object = filter_object.filter(gen_inbred_int = query_int)
+            elif filter_var == "gens":
+                query_int = int(re.sub("F", "", requestDict[filter_var]))
+                filter_object = filter_object.filter(gen_inbred_int = query_int)
 
-    if 'sd_units' in requestDict.keys():
-        query_str = requestDict['sd_units']
-        if query_str != "":
-            filter_object = filter_object.filter(amount_units = query_str)
+            elif filter_var == "sd_units":
+                print(requestDict[filter_var])
+                filter_object = filter_object.filter(amount_units = requestDict[filter_var])
+
+    print(filter_object)
+
     if return_table:
         if 'first_n' in requestDict.keys():
             table = stockTable(filter_object[:int(request.GET['first_n'])])
@@ -262,16 +263,29 @@ def newNurseryPlotsTableView(request):
       nursery_pad = len(str(nursery_length))
       for stock in baseTable:
         curPlotStr = "_" + str(curPlot).rjust(nursery_pad, "0")
-        newPlot = {
-            "plot_id" : requestDict['nursery-name'] + curPlotStr,
-            "source_stock" : stock,
-            "family" : stock.family,
-            "trial" : requestDict['nursery-name'], 
-            "desig_text" : stock.source_plot.desig_text,
-            "gen_derived_int" : stock.gen_derived_int, 
-            "gen_inbred_int" : stock.gen_inbred_int,
-            "entry_fixed" : False
-            } 
+
+        #Are we in a plot id that checks could be in?
+        range_pos = (curPlot - starting_plot) % int(requestDict['check-every'])
+
+        if range_pos in range(0, len(checkLines)):
+            newPlot = {
+                "plot_id" : requestDict['nursery-name'] + curPlotStr,
+                "trial" : requestDict['nursery-name'],
+                "desig_text" :  checkLines[range_pos],
+                "entry_fixed" : False
+                }
+        else: 
+            newPlot = {
+                "plot_id" : requestDict['nursery-name'] + curPlotStr,
+                "source_stock" : stock,
+                "family" : stock.family,
+                "trial" : requestDict['nursery-name'], 
+                "desig_text" : stock.source_plot.desig_text,
+                "gen_derived_int" : stock.gen_derived_int, 
+                "gen_inbred_int" : stock.gen_inbred_int,
+                "entry_fixed" : False
+                } 
+        
 
         tempData.append(newPlot)
         curPlot += 1 
@@ -290,7 +304,7 @@ def newNurseryPlotsTableView(request):
         newTrial = {
             "trial_id" : requestDict['nursery-name'],
             "year_text" : requestDict['nursery-year'],
-            "location_text" : "LAB",
+            "location_text" : requestDict['nursery-loc'],
             "plot_type": plot_type_dict[requestDict['plot-type']], #Remember use short name here
             "status_text": "Planned"}
 
@@ -314,10 +328,10 @@ def newNurseryPlotsTableView(request):
                     plotForm.save()
 
                     #Update seed stock to remove seed
-                    new_amount = stock.amount_decimal - decimal.Decimal(requestDict['seed-amount'])
+                    new_amount = plot.stock.amount_decimal - decimal.Decimal(requestDict['seed-amount'])
                     modStock = {"amount_decimal" : new_amount}
 
-                    stockForm = StockUpdateAmountForm(modStock, instance = stock)
+                    stockForm = StockUpdateAmountForm(modStock, instance = plot.stock)
                     stockForm.save()
 
                 else:

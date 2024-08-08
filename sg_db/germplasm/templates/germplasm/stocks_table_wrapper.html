@@ -36,6 +36,7 @@
 	  <label for = "filter-box"
 	         class = "options-box"> Year: </label>
 	    <select id="year" name = "year" class = "select-options-box">
+	      <option value = "">All</option>
 	      <option value = "2020">2020</option>
 	      <option value = "2021">2021</option>
 	      <option value = "2022">2022</option>
@@ -78,7 +79,7 @@
               hx-target="div.table-tools-wrapper">
                 {% csrf_token %}
                 {{ upload_form }}
-		<select name="sd_units" id="sd_units">
+		<select name="sd_units_upload" id="sd_units_upload">
 			<option value="hds">Heads</option>
 			<option value="g">Grams</option>
 			<option value="lb">Pounds</option>

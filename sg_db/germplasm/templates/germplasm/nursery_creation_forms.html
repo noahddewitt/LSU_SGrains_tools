@@ -32,10 +32,12 @@
 	      <form hx-post="{% url 'germplasm:new_nursery_plots_table' %}"
 		    hx-include="[name='nursery-name'],
 				  [name='nursery-year'],
+				  [name='nursery-loc'],
 				  [name='plot-type'],
 				  [name='starting-plot'],
 				  [name='row-number'],
 				  [name='pot-number'],
+				  [name='check-every'],
 		                  [name='check-entry-one'],
 		      	          [name='check-entry-two'],
 		      	          [name='check-entry-three'],
@@ -58,6 +60,12 @@
               <input id = "nursery-year" name = "nursery-year" type = "number"
                value = "" min = "2023" max = "2099">
 	      <br>
+	      <label for = "nursery-loc"
+		     class = "options-box"> Trial loc: </label>
+
+              <input id = "nursery-loc" name = "nursery-loc" type = "text" value = "">
+	      <br>
+
 	      <label for = "plot-type"
 		     class = "options-box"> Trial type: </label>
 
@@ -97,10 +105,12 @@
 		      hx-target="div.new-plots-table"
 		      hx-include="[name='nursery-name'],
 				  [name='nursery-year'],
+				  [name='nursery-loc'],
 				  [name='plot-type'],
 				  [name='starting-plot'],
 				  [name='row-number'],
 				  [name='pot-number'],
+				  [name='check-every'],
 		                  [name='check-entry-one'],
 		      	          [name='check-entry-two'],
 		      	          [name='check-entry-three'],
