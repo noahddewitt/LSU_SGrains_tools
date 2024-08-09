@@ -16,7 +16,10 @@
 	
 	<div hx-get="{% url 'germplasm:new_nursery_forms_view' %}" 
 	     hx-trigger="load" 
-	     hx-vals='{"filter" : "{{ stock_filters.filter }}"}'
+	     hx-vals='{"filter" : "{{ stock_filters.filter }}",
+	     	       "gens" : "{{ stock_filters.gens }}",
+	     	       "year" : "{{ stock_filters.year }}",
+	     	       "sd_units" : "{{ stock_filters.sd_units }}"}'
 	     hx-swap="outerHTML">
 	          Error loading table!
 

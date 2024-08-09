@@ -109,10 +109,14 @@ def stockWrapperView(request):
 
             return render(request, "germplasm/stocks_table_wrapper.html", {'upload_form': UploadStocksForm()})
  
-def stockTableView(request):
+def stockTableView(request, page_number = 15):
     table = filterStockTable(request)
 
-    tables.config.RequestConfig(request, paginate={"per_page": 15}).configure(table)
+    if "first_n" in request.GET.keys():
+        if request.GET["first_n"] != "":
+            page_number = int(request.GET['first_n'])
+
+    tables.config.RequestConfig(request, paginate={"per_page": page_number}).configure(table)
     return render(request, 'crossing/display_table.html', {"table" : table})
 
 
@@ -144,6 +148,8 @@ def filterStockTable(request, return_table = True):
 
     print(filter_object)
 
+    #This is a little extraneous at the moment but prevents the 
+    #paginate toggle at the base
     if return_table:
         if 'first_n' in requestDict.keys():
             table = stockTable(filter_object[:int(request.GET['first_n'])])
@@ -156,24 +162,25 @@ def filterStockTable(request, return_table = True):
 #In most cases this will be fine, but need to add column
 #To seed stock for selected
 def newNurseryView(request):
-
+    print("New Nursery view")
+    print(request.GET)
     stockFilters = request.GET
-    print("hey")
-    print(stockFilters)
 
-    #Logic here for importing stocks and making trials...
-    #Need to pass on dictionary of GET request to subsequent views...
+    #Pass on dictionary of get request to subsequent trials
     if request.method == 'GET':
         return render(request, "germplasm/nursery_creation.html", { 'stock_filters' : stockFilters} )#, {"form": TrialDetailsForm()})
 
 def newNurseryFormsView(request):
+    print("New nursery forms view")
+    print(request.GET)
     if request.method == 'GET':
         stockFilters = request.GET
         #I think that this is a reasonable way to do this. 
         return render(request, "germplasm/nursery_creation_forms.html", {'upload_form': UploadStocksForm(), 'stock_filters' : stockFilters})
 
 def newNurseryPlotsTableView(request):
-    print(request)
+    print("New plots table view")
+    print(request.GET)
     baseTable = filterStockTable(request, return_table = False)
 
     if request.method == 'GET':
@@ -192,7 +199,6 @@ def newNurseryPlotsTableView(request):
     #inconsistent variable naming format in this view 
     curPlot = starting_plot
 
-    print(requestDict.keys())
     short_year_str = requestDict['nursery-year'][2:4]
 
     #TD -Calculate total length of nursery to get prepend digits
@@ -214,7 +220,7 @@ def newNurseryPlotsTableView(request):
                     "desig_text" :  checkLines[range_pos],
                     "entry_fixed" : False
                     } 
-            else: 
+            else:
                 newPlot = {
                     "plot_id" : "WHR" + short_year_str + str(curPlotStr),
                     "source_stock" : stock,
@@ -232,6 +238,7 @@ def newNurseryPlotsTableView(request):
             curPlot += 1 
 
     elif requestDict['plot-type'] == "Pots":
+      baseTable = baseTable.order_by('family.family_id')
       potsPerStock = int(requestDict['pot-number'])
       for stock in baseTable:
         stockPotsAllocated = 0
@@ -258,7 +265,8 @@ def newNurseryPlotsTableView(request):
 
 
 
-    elif requestDict['plot-type'] == "Yield":
+    elif requestDict['plot-type'] in ["Yield", "SP"]:
+      baseTable = baseTable.order_by('family')
       nursery_length = len(baseTable)
       nursery_pad = len(str(nursery_length))
       for stock in baseTable:
@@ -267,6 +275,7 @@ def newNurseryPlotsTableView(request):
         #Are we in a plot id that checks could be in?
         range_pos = (curPlot - starting_plot) % int(requestDict['check-every'])
 
+        append_row = True
         if range_pos in range(0, len(checkLines)):
             newPlot = {
                 "plot_id" : requestDict['nursery-name'] + curPlotStr,
@@ -285,10 +294,14 @@ def newNurseryPlotsTableView(request):
                 "gen_inbred_int" : stock.gen_inbred_int,
                 "entry_fixed" : False
                 } 
+
+            if stock.amount_decimal == 0:
+                append_row = False
         
 
-        tempData.append(newPlot)
-        curPlot += 1 
+        if append_row: 
+            tempData.append(newPlot)
+            curPlot += 1 
 
 
     #Still have to submit tempData on action of a dif form
@@ -298,29 +311,32 @@ def newNurseryPlotsTableView(request):
         return render(request, 'crossing/display_table.html', {"table" : newPlotTable})
 
     elif request.method == 'POST':
-        plot_type_dict = {"Pots" : "Pot", "Yield" : "Yield", "HRs" : "HR", "SPs" : "SP"}
+        trial_exists = Trials.objects.filter(trial_id = requestDict['nursery-name']).exists()
+        trial_created = False
 
-        #Create trial as tempData
-        newTrial = {
-            "trial_id" : requestDict['nursery-name'],
-            "year_text" : requestDict['nursery-year'],
-            "location_text" : requestDict['nursery-loc'],
-            "plot_type": plot_type_dict[requestDict['plot-type']], #Remember use short name here
-            "status_text": "Planned"}
+        if not trial_exists:
+            plot_type_dict = {"Pots" : "Pot", "Yield" : "Yield", "HRs" : "HR", "SP" : "SP"}
 
-        #save trial row
-        trialForm = TrialEntryForm(newTrial)
+            #Create trial as tempData
+            newTrial = {
+                "trial_id" : requestDict['nursery-name'],
+                "year_text" : requestDict['nursery-year'],
+                "location_text" : requestDict['nursery-loc'],
+                "plot_type": plot_type_dict[requestDict['plot-type']], #Remember use short name here
+                "status_text": "Planned"}
+
+            #save trial row
+            trialForm = TrialEntryForm(newTrial)
+
+            if trialForm.is_valid:
+                #Have to save trial to allow dependent plots to be created
+                trialForm.save()
+                trial_created = True
+                print(trialForm.errors)
 
         #Don't start building the for loop until we verify this
-        if trialForm.is_valid():
-
-            #Have to save trial to allow dependent plots to be created
-            trialForm.save()
-
-            #The issue here is now it will start submitting I think.
+        if trial_exists or trial_created:
             for plot in tempData:
-                #Swap out trial field string for foreignkey
-                #plot['trial'] = newTrial['trial_id']
 
                 plotForm = PlotEntryForm(plot)
 
@@ -328,17 +344,28 @@ def newNurseryPlotsTableView(request):
                     plotForm.save()
 
                     #Update seed stock to remove seed
-                    new_amount = plot.stock.amount_decimal - decimal.Decimal(requestDict['seed-amount'])
-                    modStock = {"amount_decimal" : new_amount}
+                    #Checks own't have stock info
+                    try:
+                        plot_source = plot['source_stock']
+                        new_amount = plot_source.amount_decimal - decimal.Decimal(requestDict['seed-amount'])
 
-                    stockForm = StockUpdateAmountForm(modStock, instance = plot.stock)
-                    stockForm.save()
+                        if new_amount < 0:
+                            new_amount = 0
+
+                        modStock = {"amount_decimal" : new_amount}
+
+                        stockForm = StockUpdateAmountForm(modStock, instance = plot_source)
+                        stockForm.save()
+                    except:
+                        pass
+
 
                 else:
                     print(trialForm.errors)
 
                     #REMOVE created trial
-                    Trials.objects.filter(id=requestDict['nursery-name']).delete()
+                    if trial_created:
+                        Trials.objects.filter(id=requestDict['nursery-name']).delete()
 
                     return render(request, 'germplasm/partials/fail_div.html')
 
@@ -349,12 +376,13 @@ def newNurseryPlotsTableView(request):
             return render(request, 'germplasm/partials/fail_div.html')
 
 def newNurseryDetailsView(request):
-    print(request.GET.keys())
     if request.GET['plot-type'] == "HRs":
         return render(request, "germplasm/nurseries/nursery_headrows.html")
     elif request.GET['plot-type'] == "Pots":
         return render(request, "germplasm/nurseries/nursery_pots.html")
     elif request.GET['plot-type'] == "Yield":
+        return render(request, "germplasm/nurseries/nursery_yield.html")
+    elif request.GET['plot-type'] == "SP":
         return render(request, "germplasm/nurseries/nursery_yield.html")
 
 

@@ -9,6 +9,7 @@
 		 hx-trigger="load" 
 		 hx-vals='{"filter" : "{{ stock_filters.filter}}",
 			     "gens" : "{{ stock_filters.gens}}",
+			     "year" : "{{ stock_filters.year}}",
 		             "sd_units" : "{{ stock_filters.sd_units}}",
 		             "first_n" : "5"}'
 		 hx-swap="outerHTML">
@@ -45,6 +46,7 @@
 		      	          [name='check-entry-five']"
                     hx-vals='{"filter" : "{{ stock_filters.filter}}",
 			     "gens" : "{{ stock_filters.gens}}",
+			     "year" : "{{ stock_filters.year}}",
 		             "sd_units" : "{{ stock_filters.sd_units}}"}'
 		    hx-target="div.post-status-message"
 		    hx-swap="innerHTML">
@@ -78,6 +80,7 @@
 		      <option value = "HRs">Headrows</option>
 		      <option value = "Pots">Pots</option>
 		      <option value = "Yield">Yield plots</option>
+		      <option value = "SP">Single plants</option>
 	      </select>
 
 
@@ -116,9 +119,10 @@
 		      	          [name='check-entry-three'],
 		      	          [name='check-entry-four'],
 		      	          [name='check-entry-five']"
-                      hx-vals='{"filter" : "{{ stock_filters.filter}}",
-			     "gens" : "{{ stock_filters.gens}}",
-		             "sd_units" : "{{ stock_filters.sd_units}}"}'
+                      hx-vals='{"filter" : "{{ stock_filters.filter }}",
+			     "gens" : "{{ stock_filters.gens }}",
+			     "year" : "{{ stock_filters.year }}",
+		             "sd_units" : "{{ stock_filters.sd_units }}"}'
 		      hx-swap="innerHTML">
 	      </div>
         </div>
