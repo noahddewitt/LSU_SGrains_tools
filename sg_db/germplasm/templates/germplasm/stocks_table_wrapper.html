@@ -70,10 +70,16 @@
             <input type="submit" value = "submit">
           </form>
 	  
-	  <input> Download CSV </input>
+        <form style="display: inline"
+              hx-trigger="click"
+              hx-get="{% url 'tools:htmx_csv_view' %}"
+              hx-vals='{ "requested_model" : "Stocks" }'
+	      hx-include="[name='filter']"
+              >
+                <button>Download CSV</button>
+        </form>
 	  <br/>
-	  <input> Download Labels </input>
-	  <br/>
+
 
 	  <h2> Upload New Stocks </h2>
 

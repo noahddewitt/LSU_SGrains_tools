@@ -197,10 +197,14 @@ def export_csv(request, requested_model, filter_str = ""):
 
     writer.writerow(field_list)
 
+    #The issue here is with get_fields getting fields from the plot instead of cross.. no idea why.
     print(filter_str)
     if filter_str != "":
         filter_object = cur_model.objects.all()
-        sel_rows = filter_object.filter(Q(plot_id__icontains=filter_str) | Q(trial__trial_id__icontains=filter_str))
+        if requested_model == "Stocks": 
+            sel_rows = filter_object.filter(Q(stock_id__icontains=filter_str))
+        elif requested_model == "Plots": 
+            sel_rows = filter_object.filter(Q(plot_id__icontains=filter_str) | Q(trial__trial_id__icontains=filter_str))
         row_items = sel_rows.values_list(*field_list)
     else:
         row_items = cur_model.objects.all().values_list(*field_list)
