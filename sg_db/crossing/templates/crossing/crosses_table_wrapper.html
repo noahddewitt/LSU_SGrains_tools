@@ -10,13 +10,26 @@
 	       hx-get="{% url 'crossing:crosses_table_view' %}"
 	       hx-trigger="keyup delay:500ms, changed, search"
 	       hx-target="div.table-container"
-	       hx-swap="outerHTML">
+	       hx-swap="outerHTML"
+               hx-include="[name='years']">
+
+        <select id="years" name="years" class = "select-options-box"
+               hx-get="{% url 'crossing:crosses_table_view' %}"
+               hx-trigger="click"
+               hx-target="div.table-container"
+               hx-swap="outerHTML"
+               hx-include="[name='filter']">
+                <option value = "2025">2025</option>
+                <option value = "2024">2024</option>
+                <option value = "20">All</option>
+        </select>
+
 
 	<div class = "styled-link" >
 		<a href="/crossesmade_shiny" target="_blank" >  View graph of current two-way crosses  </a> 
 	</div>
 
-	<div hx-get="{% url 'crossing:crosses_table_view' %}" hx-trigger="load" hx-swap="outerHTML">
+	<div hx-get="{% url 'crossing:crosses_table_view' %}" hx-trigger="load" hx-swap="outerHTML" hx-include="[name='years']">
 		Error loading table!
 	</div>
 

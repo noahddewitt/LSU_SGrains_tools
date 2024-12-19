@@ -26,7 +26,7 @@ SECRET_KEY = 'django-insecure-kuv))7t-tid&pu4fs()9(8&rp5sgt!x@0dp^2r%enr)bet%@ga
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['130.39.214.43', 'smallgrains.agcenter.lsu.edu', 'sgbreedbase.agcenter.lsu.edu', 'localhost', '127.0.0.1']
+ALLOWED_HOSTS = ['lasmallgrains.org', 'localhost', '127.0.0.1']
 
 
 # Application definition
@@ -82,7 +82,7 @@ WSGI_APPLICATION = 'sg_db.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'NAME': str(BASE_DIR / 'db.sqlite3'),
     }
 }
 

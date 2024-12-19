@@ -18,7 +18,7 @@ djangoRoot <- "/data/sg_db/LSU_SGrains_tools/sg_db/"
 
 crossesMadePlot <- function(wcpInfo, crossesMade) {
   #For now, we want to exclude topcrosses
-  wcpInfo <- wcpInfo[wcpInfo$cp_group_text != "T", ]
+  wcpInfo <- wcpInfo[wcpInfo$cp_group_text != "F1", ]
   
   #Grid of all possible combinations.
   
@@ -87,7 +87,7 @@ crossesMadePlot <- function(wcpInfo, crossesMade) {
 server <- function(input, output, session) {
   
   sgDB <- dbConnect(RSQLite::SQLite(), paste0(djangoRoot, "db.sqlite3"))
-  wcp_Entries <- dbGetQuery(sgDB, "SELECT * FROM crossing_wcp_entries")
+  wcp_Entries <- dbGetQuery(sgDB, "SELECT * FROM crossing_wcp_entries WHERE wcp_id LIKE 'WCP25%'")
 
   #Get already-made crosses (crosses "in progress", aka targets, plus lines confirmed.)
   wcp_Xs <- dbGetQuery(sgDB, "SELECT * FROM crossing_crosses")

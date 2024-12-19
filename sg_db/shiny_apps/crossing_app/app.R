@@ -151,7 +151,7 @@ getPurdyDelim <- function(p1Str, p2Str) {
 server <- function(input, output, session) {
   
   sgDB <- dbConnect(RSQLite::SQLite(), paste0(djangoRoot, "db.sqlite3"))
-  wcp_Entries <- dbGetQuery(sgDB, "SELECT * FROM crossing_wcp_entries")
+  wcp_Entries <- dbGetQuery(sgDB, "SELECT * FROM crossing_wcp_entries WHERE wcp_id LIKE 'WCP25%'")
 
   #Get already-made crosses (crosses "in progress", aka targets, plus lines confirmed.)
   wcp_Xs <- dbGetQuery(sgDB, "SELECT * FROM crossing_crosses")

@@ -1,6 +1,6 @@
 import re
 
-from datetime import date
+from datetime import date, timedelta
 
 from django.db import models
 from django.utils import timezone
@@ -8,9 +8,13 @@ from django.utils import timezone
 from germplasm.models import Stocks
 
 class CurrentYearManager(models.Manager):
-    crossingYear = "2023" #Modify this as modification of datetime 
+    #We often begin the crossing year in november or december the year prior. 
+    #So add some days to make sure we stay in the same
+
     def get_queryset(self):
-        return super().get_queryset().filter(year_text="2023")
+        crossingYear_adjustedDate = date.today() + timedelta(60)
+        crossingYear = str(crossingYear_adjustedDate.year)
+        return super().get_queryset().filter(year_text=crossingYear) #crossingYear)
 
 class WCP_Entries(models.Model):
     wcp_id = models.CharField(max_length = 20, primary_key = True, verbose_name = "WCP Id")
@@ -66,8 +70,12 @@ class Crosses(models.Model):
     def create_families(self):
         newPurdyText = self.parent_one.desig_text + " / " + self.parent_two.desig_text
 
+        print(newPurdyText)
+
         #Fix this by defining custom function below
         newGenes = Crosses.create_gene_str(self.parent_one.genes_text, self.parent_two.genes_text)
+
+        print(newGenes)
 
         #Returns tuple
         objects, created = Families.objects.update_or_create(

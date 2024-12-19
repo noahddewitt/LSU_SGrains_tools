@@ -39,16 +39,19 @@ def wcpWrapperView(request):
         return render(request, "crossing/wcp_index.html")
 
 def wcpTableView(request):
+    cur_year = request.GET['years']
+
     if 'filter' in request.GET.keys():
         query_str = request.GET['filter']
         table = wcpTable(WCP_Entries.objects.filter(
+            Q(year_text__icontains=cur_year),
             Q(wcp_id__icontains=query_str) | 
             Q(desig_text__icontains=query_str) |
             Q(purdy_text__icontains=query_str) |
             Q(genes_text__icontains=query_str) |
             Q(notes_text__icontains=query_str)))
     else:
-        table = wcpTable(WCP_Entries.objects.all())
+        table = wcpTable(WCP_Entries.objects.filter(Q(year_text__icontains=cur_year)))
 
     tables.config.RequestConfig(request, paginate={"per_page": 15}).configure(table)
     return render(request, 'crossing/display_table.html', {"table" : table}) 
@@ -117,16 +120,19 @@ def crossesWrapperView(request):
         return render(request, "crossing/crosses_table_wrapper.html", {"form": UploadCrossesForm()})
 
 def crossesTableView(request):
+    cur_year = request.GET['years']
+
     if 'filter' in request.GET.keys():
         query_str = request.GET['filter']
         table = crossesTable(Crosses.objects.filter(
+            Q(year_text__icontains=cur_year),
             Q(cross_id__icontains=query_str) | 
             Q(parent_one__desig_text__icontains=query_str) |
             Q(parent_two__desig_text__icontains=query_str) |
             Q(crosser_text__icontains=query_str) |
             Q(status_text__icontains=query_str)))
     else:
-        table = crossesTable(Crosses.objects.all())
+        table = crossesTable(Crosses.objects.filter(Q(year_text__icontains=cur_year)))
 
     table.order_by = "cross_id"
     tables.config.RequestConfig(request, paginate={"per_page": 15}).configure(table)
@@ -152,15 +158,18 @@ def familiesWrapperView(request):
         return render(request, "crossing/wcp_index.html")
 
 def familiesTableView(request):
+    cur_year = request.GET['years']
+
     if 'filter' in request.GET.keys():
         query_str = request.GET['filter']
         table = familiesTable(Families.objects.filter(
+            Q(year_text__icontains=cur_year),
             Q(family_id__icontains=query_str) | 
             Q(purdy_text__icontains=query_str) |
             Q(cross__cross_id__icontains=query_str) |
             Q(genes_text__icontains=query_str)))
     else:
-        table = familiesTable(Families.objects.all())
+        table = familiesTable(Families.objects.filter(Q(year_text__icontains=cur_year)))
     tables.config.RequestConfig(request, paginate={"per_page": 15}).configure(table)
     return render(request, 'crossing/display_table.html', {"table" : table}) 
 
