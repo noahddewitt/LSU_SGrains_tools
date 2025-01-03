@@ -484,6 +484,21 @@ def trialTableView(request):
     tables.config.RequestConfig(request, paginate={"per_page": 15}).configure(table)
     return render(request, 'crossing/display_table.html', {"table" : table})
 
+def parseDate(date_str):
+    if bool(re.search("-", date_str)):
+        date_str = re.sub("-", "/", date_str)
+
+    try:
+        date_str = datetime.strptime(date_str, "%m/%d/%Y")
+    except:
+        try:
+            date_str = datetime.strptime(date_str, "%Y/%m/%d")
+        except:
+            date_str = None
+
+    return date_str
+
+
 def trialUploadView(request):
     if request.method == 'GET':
         return render(request, "germplasm/trials_manual_upload.html", {"upload_form": UploadTrialsForm()})
@@ -491,10 +506,8 @@ def trialUploadView(request):
         Trials_File = request.FILES["Trials_File"]
         rows = TextIOWrapper(Trials_File, encoding="utf-8", newline="")
         for row in csv.DictReader(rows):
-            print(row)
-
-            row['harvest_date'] = datetime.strptime(row['harvest_date'], "%m/%d/%Y")
-            row['planting_date'] = datetime.strptime(row['planting_date'], "%m/%d/%Y")
+            row['planting_date'] = parseDate(row['planting_date'])
+            row['harvest_date'] = parseDate(row['harvest_date'])
 
             if not Trials.objects.filter(trial_id = row['trial_id']).exists():
                 form = TrialEntryForm(row)
