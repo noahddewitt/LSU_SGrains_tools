@@ -238,7 +238,7 @@ def newNurseryPlotsTableView(request):
             curPlot += 1 
 
     elif requestDict['plot-type'] == "Pots":
-      baseTable = baseTable.order_by('family.family_id')
+      baseTable = baseTable.order_by('family')
       potsPerStock = int(requestDict['pot-number'])
       for stock in baseTable:
         stockPotsAllocated = 0
@@ -248,8 +248,10 @@ def newNurseryPlotsTableView(request):
             else:
                 new_desig_text = stock.stock_id
 
+            curPlotStr = "_" + str(curPlot).rjust(3, "0")
+
             newPlot = {
-                "plot_id" : requestDict['nursery-name'] + str(curPlot),
+                "plot_id" : requestDict['nursery-name'] + curPlotStr,
                 "source_stock" : stock,
                 "family" : stock.family,
                 "trial" : requestDict['nursery-name'],
