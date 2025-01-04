@@ -1,0 +1,18 @@
+<div class="table-tools-wrapper">
+
+	<div hx-get="{% url 'germplasm:predictions_table_view' %}" hx-trigger="load" hx-swap="outerHTML">
+		Error loading table!
+	</div>
+
+        <form style="display: inline"
+              action="/germplasm/predictions/predictionsUpload"
+              method="get">
+                <button>Manual Upload</button>
+        </form>
+
+	<form style="display: inline" 
+	      action="/tools/export/csv/Predictions" 
+	      method="get">
+		<button>Download CSV</button>
+	</form>
+</div>

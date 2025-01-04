@@ -20,6 +20,9 @@ urlpatterns = [
         path("trials/trialsUpload", views.trialUploadView, name = "trials_manual_upload"),
         path("trials/trialsTable", views.trialWrapperView, name = "trials_wrapper_view"),
         path("trials/trialsTable/tableContent", views.trialTableView, name = "trials_table_view"),
-
+        path("predictions", views.predictionsView, name = "predictions_view"),
+        path("predictions/predictionsUpload", views.predictionsUploadView, name = "predictions_manual_upload"),
+        path("predictions/predictionsTable", views.predictionsWrapperView, name = "predictions_wrapper_view"),
+        path("predictions/predictionsTable/predictionsContent", views.predictionsTableView, name = "predictions_table_view"),
 
         ]

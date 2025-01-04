@@ -1,0 +1,56 @@
+{% extends "base.html" %}  
+
+{% load django_tables2 %}
+{% load static %}
+
+{% block extrastyles %}
+	<title> Wheat trial predictions </title>
+	<link rel="stylesheet" href={% static 'sg_db/css/table_style.css' %}>
+{% endblock %}
+
+{% block main %} 
+
+<main>
+
+	<h2> Trial Predictions </h2>
+	<p> Upload trial predictions: </p>	
+	<br>
+
+        <form hx-post = "{% url 'germplasm:predictions_manual_upload' %}"
+              hx-encoding = "multipart/form-data"
+              hx-target="main">
+                {% csrf_token %}
+                {{ upload_form }}
+                <input class = "button" type="submit" value = "Upload">
+        </form>
+
+
+	<br>
+	<br>
+	<br>
+	<p>TO-DO : Download a template CSV with correct column names to manually upload plots:</p>
+	<br>
+
+        <form style="display: inline"
+	      action="{% static 'sg_db/files/trials_upload_template.csv' %}"
+              method="get">
+                <button>Download Template</button>
+        </form>
+
+	<br>
+	<br>
+	<br>
+	<br>
+
+
+        <form style="display: inline"
+	      action="/germplasm/predictions"
+              method="get">
+                <button>Back</button>
+        </form>
+
+
+
+</main>
+
+{% endblock %} 

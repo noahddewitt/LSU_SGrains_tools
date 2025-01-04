@@ -10,10 +10,10 @@ import django_tables2 as tables
 from django.shortcuts import render
 from django.db.models import Q
 
-from .models import Trials, Stocks, Plots
+from .models import Trials, Stocks, Plots, Predictions
 from crossing.models import Families
 from .forms import UploadStocksForm, TrialEntryForm, PlotEntryForm, StockEntryForm, UploadPlotsForm, UploadTrialsForm, StockUpdateAmountForm
-from .tables import stockTable, plotTable, trialTable
+from .tables import stockTable, plotTable, trialTable, predictionTable
 
 
 def stockView(request):
@@ -522,5 +522,41 @@ def trialUploadView(request):
                 existing_trial = Trials.objects.get(trial_id = row['trial_id'])
                 form = TrialEntryForm(row, instance = existing_trial)
                 form.save()
+
+        return render(request, "germplasm/trials_manual_upload.html", {"upload_form": UploadPlotsForm()})
+
+def predictionsView(request):
+    return render(request, "germplasm/predictions_index.html")
+
+def predictionsWrapperView(request):
+    if request.method == 'GET':
+        return render(request, "germplasm/predictions_table_wrapper.html")
+
+#Predictions table needs to be quite different from previous ones. We don't care at alla bout viewing the individual predictions.
+#We need a selector that lets you choose individual TRIALS. Then it displays phenotypes for which all famliies in that trial have 
+#predictions available. Then a selector that allows for generation of output. 
+
+def predictionsTableView(request):
+    #Need to generalize this function and make it work here.
+   # table = filterStockTable(request)
+    table = predictionTable(Predictions.objects.all())
+    tables.config.RequestConfig(request, paginate={"per_page": 15}).configure(table)
+    return render(request, 'crossing/display_table.html', {"table" : table})
+
+def predictionsUploadView(request):
+    if request.method == 'GET':
+        return render(request, "germplasm/predictions_manual_upload.html", {"upload_form": UploadPredictionsForm()})
+    elif request.method == 'POST':
+        Predictions_File = request.FILES["Predictions_File"]
+        rows = TextIOWrapper(Trials_File, encoding="utf-8", newline="")
+        for row in csv.DictReader(rows):
+
+
+            #We need to make sure we overwrite predictions from previous runs instead of adding new ones with different auto ids
+            if form.is_valid():
+                form.save()
+            else:
+                print(form.errors)
+
 
         return render(request, "germplasm/trials_manual_upload.html", {"upload_form": UploadPlotsForm()})
