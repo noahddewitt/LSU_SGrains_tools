@@ -7,7 +7,7 @@ from datetime import date, datetime
 from io import TextIOWrapper
 from pathlib import Path
 
-from django.shortcuts import render
+from django.shortcuts import get_object_or_404, render
 from django.db.models import Q
 
 from django.http import HttpResponse
@@ -214,4 +214,26 @@ def export_csv(request, requested_model, filter_str = ""):
 
     return response
 
+def fieldbookView(request):#, trial_str): #Add family list here
+    #Have to have a variable in the function call that holds all of the..j
+    #The family list HAS to come from the trial. You will have to select the trial....
+
+    trial_str = "CAN24LAB_F1"
+
+    #Also need something like
+    #trial_object = get_object_or_404(Trials, pk = trial_str)
+    #if trial_object.plot_type == "HR":
+
+    trial_plots = Plots.objects.filter(trial__trial_id__icontains=trial_str) 
+
+    family_list = trial_plots.values("family").distinct()
+    args = {}
+    args['families'] = [] 
+
+    for fam_str in family_list:
+        fam_object = get_object_or_404(Families, pk = fam_str['family'])
+        args['families'].append(fam_object)
+
+    if request.method == 'GET':
+        return render(request, "tools/fieldbooks.html", args)
 

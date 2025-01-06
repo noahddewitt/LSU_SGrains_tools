@@ -1,0 +1,25 @@
+<div class="table-tools-wrapper">
+  <div class="entry-title">
+	<h3> <span> {{ fam.family_id }} </span></h3>
+  </div>
+  <div class="row">
+    <div class="column">
+       <h3> <span> &#9792; {{ fam.cross.parent_one }} </span> </h3>
+       <div class="detail-box">
+	<p class="detail_info">{{ fam.cross.parent_one.purdy_text }}</p>
+       </div>
+       <div class="detail-box">
+        <p class="detail_info">{{ fam.cross.parent_one.genes_text }}</p>
+       </div>
+    </div>
+    <div class="column">
+       <h3> &#9794; {{ fam.cross.parent_two }} </a> </span></h3>
+       <div class="detail-box">
+        <p class="detail_info">{{ fam.cross.parent_two.purdy_text }}</p>
+       </div>
+       <div class="detail-box">
+        <p class="detail_info">{{ fam.cross.parent_two.genes_text }}</p>
+       </div>
+    </div>
+  </div>	
+</div>

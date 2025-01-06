@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+{% extends "base.html" %}  
+
+{% load static %}
+
+{% block extrastyles %}
+
+<title> Test Fieldbook </title>
+
+{% endblock %}
+
+{% block main %} 
+
+<main>
+    <h2> Fieldbook generator test </h2>
+
+    <div class = "row">
+      <div class = "column">
+	      <p> test test test test </p>
+	      <p> okay lets test iteration! </p>
+	      {% for fam in families %}
+		{% include 'tools/partials/familyDetail_partial.html' %}
+	      {% endfor %}
+      </div>
+    </div>
+</main>
+
+{% endblock %} 
