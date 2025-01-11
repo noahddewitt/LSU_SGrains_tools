@@ -1,6 +1,6 @@
 from django.forms import Form, ModelForm, FileField
 
-from .models import Stocks, Plots, Trials
+from .models import Stocks, Plots, Trials, Predictions
 
 class PlotEntryForm(ModelForm):
     class Meta:
@@ -23,6 +23,11 @@ class TrialEntryForm(ModelForm):
         fields = ["trial_id", "year_text", "location_text", "plot_type", "planting_date", "harvest_date", "status_text"]
         exclude = []
 
+class PredictionsEntryForm(ModelForm):
+    class Meta:
+        model = Predictions
+        exclude = []
+
 class UploadStocksForm(Form):
     Stocks_File = FileField(label = '')
     Stocks_File.widget.attrs.update({'class': 'file-upload'})
@@ -34,3 +39,7 @@ class UploadPlotsForm(Form):
 class UploadTrialsForm(Form):
     Trials_File = FileField(label = '')
     Trials_File.widget.attrs.update({'class': 'file-upload'})
+
+class UploadPredictionsForm(Form):
+    Predictions_File = FileField(label = '')
+    Predictions_File.widget.attrs.update({'class': 'file-upload'})

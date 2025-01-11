@@ -4,7 +4,7 @@
 {% load static %}
 
 {% block extrastyles %}
-	<title> Wheat trial predictions </title>
+	<title> Predictions by Trial </title>
 	<link rel="stylesheet" href={% static 'sg_db/css/table_style.css' %}>
 {% endblock %}
 
@@ -12,7 +12,7 @@
 
 <main>
 
-	<h2> Predictions</h2>
+	<h2> Predictions by Trial </h2>
 
 	<div hx-get="{% url 'germplasm:predictions_wrapper_view' %}"
 	     hx-trigger="load"

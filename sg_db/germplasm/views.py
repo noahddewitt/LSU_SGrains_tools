@@ -12,7 +12,7 @@ from django.db.models import Q
 
 from .models import Trials, Stocks, Plots, Predictions
 from crossing.models import Families
-from .forms import UploadStocksForm, TrialEntryForm, PlotEntryForm, StockEntryForm, UploadPlotsForm, UploadTrialsForm, StockUpdateAmountForm
+from .forms import UploadStocksForm, TrialEntryForm, PlotEntryForm, StockEntryForm, PredictionsEntryForm, UploadPlotsForm, UploadTrialsForm, StockUpdateAmountForm, UploadPredictionsForm
 from .tables import stockTable, plotTable, trialTable, predictionTable
 
 
@@ -548,15 +548,25 @@ def predictionsUploadView(request):
         return render(request, "germplasm/predictions_manual_upload.html", {"upload_form": UploadPredictionsForm()})
     elif request.method == 'POST':
         Predictions_File = request.FILES["Predictions_File"]
-        rows = TextIOWrapper(Trials_File, encoding="utf-8", newline="")
+        rows = TextIOWrapper(Predictions_File, encoding="utf-8", newline="")
         for row in csv.DictReader(rows):
-
-
             #We need to make sure we overwrite predictions from previous runs instead of adding new ones with different auto ids
-            if form.is_valid():
-                form.save()
+
+            #I don't particulary care about causing a fuss if a family id that doesn't exist in the DB is in the predictions file. This often happens because need to predict topcross parents way back
+            if Families.objects.filter(family_id = row['family']).exists():
+                row['family'] = Families.objects.get(family_id = row['family'])
+                row['value_decimal'] = round(float(row['value_decimal']), 2)
+
+                form = PredictionsEntryForm(row)
+
+                if form.is_valid():
+                    form.save()
+                else:
+                    for field, errors in form.errors.items():
+                        print(field)
+                        print(errors)
             else:
-                print(form.errors)
+                print(row['family'] + "not found.")
 
 
-        return render(request, "germplasm/trials_manual_upload.html", {"upload_form": UploadPlotsForm()})
+        return render(request, "germplasm/predictions_manual_upload.html", {"upload_form": UploadPredictionsForm()})
