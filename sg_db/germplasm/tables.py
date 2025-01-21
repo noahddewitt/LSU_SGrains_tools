@@ -20,6 +20,10 @@ class trialTable(tables.Table):
     class Meta:
         model = Trials
 
+#Meant to take dict created from pandas df
 class predictionTable(tables.Table):
-    class Meta:
-        model = Predictions
+    trial_id = tables.Column()
+    run_text = tables.Column()
+    families_count = tables.Column()
+
+

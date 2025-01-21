@@ -2,6 +2,7 @@ import csv
 import re
 
 import decimal
+import pandas as pd
 from datetime import date, datetime
 from io import TextIOWrapper
 
@@ -9,6 +10,7 @@ import django_tables2 as tables
 
 from django.shortcuts import render
 from django.db.models import Q
+from django.db import connection
 
 from .models import Trials, Stocks, Plots, Predictions
 from crossing.models import Families
@@ -537,11 +539,29 @@ def predictionsWrapperView(request):
 #predictions available. Then a selector that allows for generation of output. 
 
 def predictionsTableView(request):
-    #Need to generalize this function and make it work here.
-   # table = filterStockTable(request)
-    table = predictionTable(Predictions.objects.all())
-    tables.config.RequestConfig(request, paginate={"per_page": 15}).configure(table)
-    return render(request, 'crossing/display_table.html', {"table" : table})
+    with connection.cursor () as cursor:
+        cursor.execute("select plots.trial_id, plots.family_id, preds.run_text  FROM germplasm_plots AS plots INNER JOIN germplasm_predictions AS preds ON plots.family_id = preds.family_id")
+
+        columns = [col[0] for col in cursor.description]
+        query_results = [
+                dict(zip(columns, row))
+                for row in cursor.fetchall()
+                ]
+
+    #We did it manually, so we don't get a query object, but a dict
+    query_df = pd.DataFrame(query_results)
+    query_counts = query_df[['trial_id', 'run_text']].value_counts()
+    #Turns from series datatype back to dataframe
+    query_counts = query_counts.reset_index()
+    query_counts.columns = ['trial_id', 'run_text', 'families_count']
+
+    query_counts_dict = query_counts.to_dict(orient = 'index')
+    query_counts_list = [value for value in query_counts_dict.values()]
+
+    counts_table = predictionTable(query_counts_list)
+
+    tables.config.RequestConfig(request, paginate={"per_page": 15}).configure(counts_table)
+    return render(request, 'crossing/display_table.html', {"table" : counts_table})
 
 def predictionsUploadView(request):
     if request.method == 'GET':
