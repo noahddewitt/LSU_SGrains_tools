@@ -91,4 +91,4 @@ class Predictions(models.Model):
     value_decimal = models.DecimalField(max_digits = 10, decimal_places = 2, default = 0, verbose_name = "Value")
 
     def __str__(self):
-        return self.prediction_id
+        return self.run_text + " / " + self.family.family_id

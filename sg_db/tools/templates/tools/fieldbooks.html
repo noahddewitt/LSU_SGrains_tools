@@ -18,8 +18,9 @@
       <div class = "column">
 	      <p> test test test test </p>
 	      <p> okay lets test iteration! </p>
-	      {% for fam in families %}
+	      {% for family, preds in preds.items %}
 		{% include 'tools/partials/familyDetail_partial.html' %}
+		{% include 'tools/partials/familyPreds_partial.html' %}
 	      {% endfor %}
       </div>
     </div>

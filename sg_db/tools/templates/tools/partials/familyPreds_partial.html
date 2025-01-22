@@ -1,0 +1,10 @@
+<div class="table-tools-wrapper">
+  <div class="entry-title">
+	{% for key, value in preds.items %}
+		{% if key != "family_object" %}
+			{{ key }}
+			<h3 style="background-color:{{ value.1 }};">{{ value.0 }}</h3>
+		{% endif %}
+	{% endfor %}
+  </div>
+</div>

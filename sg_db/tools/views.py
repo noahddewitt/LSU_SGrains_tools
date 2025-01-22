@@ -15,7 +15,7 @@ from django.http import HttpResponse
 from .forms import UploadLabelsForm
 
 from crossing.models import WCP_Entries, Crosses, Families
-from germplasm.models import Plots, Stocks, Trials
+from germplasm.models import Plots, Stocks, Trials, Predictions
 
 def lblView(request):
     if request.method == 'GET':
@@ -214,11 +214,26 @@ def export_csv(request, requested_model, filter_str = ""):
 
     return response
 
+def getScaleColor(value):
+    bVal = int(100 + (50 * value))
+    rVal = int(100 - (50 * value))
+    gVal = 0
+
+    hexVal = "#{:02x}{:02x}{:02x}".format(rVal, gVal, bVal)
+
+    return hexVal
+
 def fieldbookView(request):#, trial_str): #Add family list here
     #Have to have a variable in the function call that holds all of the..j
     #The family list HAS to come from the trial. You will have to select the trial....
 
     trial_str = "CAN24LAB_F1"
+
+    #Have to pass in which predictions we want to use as a list as well. The entry point into this will come from the trial predictions summary page.
+    #Actually, has to be the pheno....
+    #Need to fix this later -- I still need to FILTER by the run, I just
+    #Want to only DISPLAY the phenotype...
+    preds_list = ["DON_FHB", "Yield_C1", "Yield_LATX"]
 
     #Also need something like
     #trial_object = get_object_or_404(Trials, pk = trial_str)
@@ -228,12 +243,34 @@ def fieldbookView(request):#, trial_str): #Add family list here
 
     family_list = trial_plots.values("family").distinct()
     args = {}
-    args['families'] = [] 
+    #args['families'] = [] 
+    args['preds'] = {}
 
     for fam_str in family_list:
-        fam_object = get_object_or_404(Families, pk = fam_str['family'])
-        args['families'].append(fam_object)
+        try:
+            fam_object = Families.objects.get(pk = fam_str['family'])
+        except:
+            print("Error -- family " + fam_object + " not found.")
+            continue
 
+    #    args['families'].append(fam_object)
+       
+        #Assemble a dictionary of run:value pairs for all predictions
+        preds_dict = {}
+        for pred_run in preds_list:
+            #Change this to filter on run_text
+            pred_object = Predictions.objects.all().filter(pheno_text = pred_run,
+                                                          family = fam_object)[0]
+            pred_value = pred_object.value_decimal
+
+
+            preds_dict[pred_run] = [pred_value, getScaleColor(pred_value)]
+
+        preds_dict['family_object'] = fam_object
+        args['preds'][fam_object.family_id] = preds_dict
+
+
+    print(args['preds'])
     if request.method == 'GET':
         return render(request, "tools/fieldbooks.html", args)
 
