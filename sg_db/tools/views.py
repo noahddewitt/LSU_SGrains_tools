@@ -13,6 +13,7 @@ from django.db.models import Q, Min, Max
 from django.http import HttpResponse
 
 from .forms import UploadLabelsForm
+from .tables import FamilyPlotsTable
 
 from crossing.models import WCP_Entries, Crosses, Families
 from germplasm.models import Plots, Stocks, Trials, Predictions
@@ -242,7 +243,7 @@ def fieldbookView(request):#, trial_str): #Add family list here
     trial_str = "CAN24LAB_F1"
 
     #Have to pass in which predictions we want to use as a list as well. The entry point into this will come from the trial predictions summary page.
-    preds_dict = {"Jan25_DON_FHB_Jeanette":"DON_FHB", "Jan25_Yield_C1_Jeanette":"Yield_C1", "Jan25_Yield_LATX_Jeanette": "Yield_LATX"}
+    preds_dict = {"Jan25_DON_FHB_Jeanette":"DON_FHB", "Jan25_FDK_FHB_Fhb1_Jeanette":"FDK_FHB", "Jan25_Yield_C1_Jeanette":"Yield_C1", "Jan25_Yield_LATX_Jeanette": "Yield_LATX", "Jan25_TestWt_C1_awn5A_Jeanette": "TW"}
 
     #Get max and min for these trials....
     max_min_dict = {}
@@ -256,6 +257,7 @@ def fieldbookView(request):#, trial_str): #Add family list here
     #Also need something like
     #trial_object = get_object_or_404(Trials, pk = trial_str)
     #if trial_object.plot_type == "HR":
+    #Actually, I don't think I will. 
 
     trial_plots = Plots.objects.filter(trial__trial_id__icontains=trial_str) 
 
@@ -264,6 +266,7 @@ def fieldbookView(request):#, trial_str): #Add family list here
     args['preds'] = {}
 
     for fam_str in family_list:
+        #Prepare info for family details and predictions
         try:
             fam_object = Families.objects.get(pk = fam_str['family'])
         except:
@@ -283,7 +286,22 @@ def fieldbookView(request):#, trial_str): #Add family list here
 
             pred_values_dict[preds_dict[pred_run]] = [pred_value, pred_color]
 
+
+        #Individual plots associated with trial and family
+        family_plots = Plots.objects.all().filter(trial_id = trial_str, family_id = fam_str['family'])
+
+        #Represent plots as dict
+        family_plots_table = FamilyPlotsTable(family_plots) 
+
+        #For each trial and family, there should only be one generation type
+        first_family_plot = family_plots.values()[0]
+
+        generation_str = str(first_family_plot["gen_derived_int"]) + ":" + str(first_family_plot["gen_inbred_int"])
+
+
         pred_values_dict['family_object'] = fam_object
+        pred_values_dict['family_plots_table'] =  family_plots_table
+        pred_values_dict['family_plots_gen'] = generation_str
         args['preds'][fam_object.family_id] = pred_values_dict
 
 

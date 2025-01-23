@@ -2,6 +2,7 @@
 
 <html lang="en-US">
 
+{% load django_tables2 %}
 {% load static %}
 
 <head>
@@ -11,12 +12,10 @@
 
 <link rel="shortcut icon" href="{%  static 'sg_db/media/sun_placeholder.ico' %}">
 <link rel="stylesheet" href={% static 'sg_db/css/base_style.css' %}>
-
-<title> Test Fieldbook </title>
-
+<link rel="stylesheet" href={% static 'sg_db/css/table_style.css' %}>
 <link rel="stylesheet" href={% static 'sg_db/css/fieldbook_style.css' %}>
 
-
+<title> Test Fieldbook </title>
 
 {% block main %} 
 
@@ -24,6 +23,7 @@
 	      {% for family, preds in preds.items %}
 		{% include 'tools/partials/familyDetail_partial.html' %}
 		{% include 'tools/partials/familyPreds_partial.html' %}
+		{% include 'tools/partials/family_plots_table.html' %}
 	      {% endfor %}
 </main>
 

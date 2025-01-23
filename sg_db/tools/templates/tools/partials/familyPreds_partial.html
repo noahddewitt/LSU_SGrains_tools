@@ -1,6 +1,6 @@
 	{% for key, value in preds.items %}
 	    <div class = "fb-column-pred">
-		{% if key != "family_object" %}
+		{% if key != "family_object" and key != "family_plots_table" and key != "family_plots_gen" %}
 		  <div class="detail-box">
 		    <div class = "detail_info">
 			<p> {{ value.0 }} </p>

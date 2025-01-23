@@ -1,14 +1,14 @@
 .fb-column-one {
-	width:1.5in;
+	width:1in;
 }
 
 .fb-column-parent {
-	width:2in;
+	width:2.25in;
 }
 
 
 .fb-column-purdy {
-	width:3in;
+	width:3.25in;
 }
 
 .fb-column-genes {
@@ -27,6 +27,15 @@
       /* this is just to keep everything together */
       width: 11px;
  }
+
+/* borders for notes on dif. dates */
+.table td + td.notes-text-column {
+	border-left: 3px solid #b5b29f;
+}
+
+.table tr td {
+	max-width: 2.5vw;
+}
 
 /* over-rides to default style sheet */
 
@@ -101,4 +110,12 @@ p.detail_info {
 	margin-right: 15px;
 	border: none;
 	border-radius: 6px;
+}
+
+
+.table {
+	width: 10in;
+	margin-left: 1in;
+	margin-bottom: 10px;
+	font-size: 12px;
 }
