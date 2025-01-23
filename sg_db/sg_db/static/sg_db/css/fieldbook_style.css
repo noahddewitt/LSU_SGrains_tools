@@ -1,0 +1,104 @@
+.fb-column-one {
+	width:1.5in;
+}
+
+.fb-column-parent {
+	width:2in;
+}
+
+
+.fb-column-purdy {
+	width:3in;
+}
+
+.fb-column-genes {
+	width:2in;
+}
+
+.fb-column-pred {
+	width:1in;
+}
+
+
+.outer-container{
+      display: flex;  
+      flex-direction: row;
+      margin-bottom: 5px;
+      /* this is just to keep everything together */
+      width: 11px;
+ }
+
+/* over-rides to default style sheet */
+
+body {
+	background-color: #FFFFFF;
+}
+
+main {
+	padding-top: 40px;
+	padding-left: 20px;
+	padding-right: 0px;
+}
+
+.row{
+	justify-content: space-evenly;
+}
+.detail-box {
+	background-color: #ece8ceff;
+	padding: .01px 8px;
+	margin-bottom: 5px;
+	padding-top: 0.01px;
+	margin-right: 10px;
+	border: none;
+	border-radius: 6px;
+}
+
+.scale-box {
+	padding: .01px 8px;
+	margin-top: -20px;
+	margin-bottom: 5px;
+	padding-top: 0.1px;
+	padding-bottom:20px;
+	margin-right: 10px;
+	border: none;
+	border-radius: 6px;
+	position:relative;
+	z-index: -1000;
+}
+
+.detail-box-family {
+	background-color: #C2B0D4;
+	padding: .01px 8px;
+	margin-bottom: 5px;
+	padding-top: 0.01px;
+	margin-right: 10px;
+	border: none;
+	border-radius: 6px;
+	font-weight: bold;
+}
+
+.detail_info {
+  width: 100%;
+  font-size: 12px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden; 
+}
+
+p.detail_info {
+	min-height: 0px;
+}
+
+.entry-title {
+	width: 10%;
+	text-align: center;
+	margin-top: 0px;
+}
+
+.entry-title h3 span {
+ 	background-color: #C2B0D4;
+	padding: 2px 20px;
+	margin-right: 15px;
+	border: none;
+	border-radius: 6px;
+}

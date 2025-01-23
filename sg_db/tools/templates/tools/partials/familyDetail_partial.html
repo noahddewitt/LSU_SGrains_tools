@@ -1,25 +1,50 @@
 <div class="table-tools-wrapper">
-  <div class="entry-title">
-	<h3> <span> {{ preds.family_object.family_id }} </span></h3>
+  <div class="outer-container">
+  <div class="column">
+  {% with fam=preds.family_object %}
+  <div class="row">
+    <div class="fb-column-one">
+       <div class="detail-box-family">
+          <p class="detail_info"> {{ fam.family_id }} </p>
+       </div>
+    </div>
+    <div class="fb-column-parent">
+       <div class="detail-box">
+	       <p class="detail_info"> &#9792; {{ fam.cross.parent_one }} </p> 
+       </div>
+    </div>
+    <div class="fb-column-purdy">
+       <div class="detail-box">
+	<p class="detail_info">{{ fam.cross.parent_one.purdy_text }}</p>
+       </div>
+    </div>
+    <div class="fb-column-genes">
+       <div class="detail-box">
+        <p class="detail_info">{{ fam.cross.parent_one.genes_text }}</p>
+       </div>
+    </div>
   </div>
   <div class="row">
-    <div class="column">
-       <h3> <span> &#9792; {{ preds.family_object.cross.parent_one }} </span> </h3>
+    <div class="fb-column-one">
        <div class="detail-box">
-	<p class="detail_info">{{ preds.family_object.cross.parent_one.purdy_text }}</p>
-       </div>
-       <div class="detail-box">
-        <p class="detail_info">{{ preds.family_object.cross.parent_one.genes_text }}</p>
+        <p class="detail_info"> F4 </p>
        </div>
     </div>
-    <div class="column">
-       <h3> &#9794; {{ preds.family_object.cross.parent_two }} </a> </span></h3>
+    <div class="fb-column-parent">
        <div class="detail-box">
-        <p class="detail_info">{{ preds.family_object.cross.parent_two.purdy_text }}</p>
-       </div>
-       <div class="detail-box">
-        <p class="detail_info">{{ preds.family_object.cross.parent_two.genes_text }}</p>
+	    <p class="detail_info"> &#9794; {{ fam.cross.parent_two }} </p>
        </div>
     </div>
-  </div>	
+    <div class="fb-column-purdy">
+       <div class="detail-box">
+        <p class="detail_info">{{ fam.cross.parent_two.purdy_text }}</p>
+       </div>
+    </div>
+    <div class="fb-column-genes">
+       <div class="detail-box">
+        <p class="detail_info">{{ fam.cross.parent_two.genes_text }}</p>
+       </div>
+    </div>
+  </div>
+  {% endwith %}
 </div>

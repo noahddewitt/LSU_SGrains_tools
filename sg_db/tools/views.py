@@ -8,7 +8,7 @@ from io import TextIOWrapper
 from pathlib import Path
 
 from django.shortcuts import get_object_or_404, render
-from django.db.models import Q
+from django.db.models import Q, Min, Max
 
 from django.http import HttpResponse
 
@@ -214,14 +214,26 @@ def export_csv(request, requested_model, filter_str = ""):
 
     return response
 
-def getScaleColor(value):
-    bVal = int(100 + (50 * value))
-    rVal = int(100 - (50 * value))
-    gVal = 0
+def getScaleColor(value, max_val, min_val):
+    scaled_value = value / (max_val - min_val)
 
-    hexVal = "#{:02x}{:02x}{:02x}".format(rVal, gVal, bVal)
+    scale_pos = ["#ffffe0", "#ebeed3", "#bec8b5", "#83948a", "#395653", "#003233"]
+    scale_neg = ["#580000", "#803522", "#b48166", "#d8bfa0", "#f3eccc", "#ffffe0"]
 
-    return hexVal
+    #I'm assuming max is not negative.
+    if (value > 0):
+        scaled_value = value / max_val
+        scaled_index = int(round(scaled_value * 5, 0))
+        hex_val = scale_pos[scaled_index]
+    else:
+        #Maintains negative value
+        scaled_value = -1 * (value / min_val)
+        scaled_index = int(round(scaled_value * 5, 0))
+        hex_val = scale_neg[scaled_index]
+    
+    #hex_val = "#{:02x}{:02x}{:02x}".format(r_val, g_val, b_val)
+
+    return hex_val
 
 def fieldbookView(request):#, trial_str): #Add family list here
     #Have to have a variable in the function call that holds all of the..j
@@ -230,11 +242,17 @@ def fieldbookView(request):#, trial_str): #Add family list here
     trial_str = "CAN24LAB_F1"
 
     #Have to pass in which predictions we want to use as a list as well. The entry point into this will come from the trial predictions summary page.
-    #Actually, has to be the pheno....
-    #Need to fix this later -- I still need to FILTER by the run, I just
-    #Want to only DISPLAY the phenotype...
-    preds_list = ["DON_FHB", "Yield_C1", "Yield_LATX"]
+    preds_dict = {"Jan25_DON_FHB_Jeanette":"DON_FHB", "Jan25_Yield_C1_Jeanette":"Yield_C1", "Jan25_Yield_LATX_Jeanette": "Yield_LATX"}
 
+    #Get max and min for these trials....
+    max_min_dict = {}
+    for run in preds_dict.keys():
+        run_vals = Predictions.objects.all().filter(run_text = run)
+        max_min = run_vals.aggregate(Max("value_decimal"), Min("value_decimal"))
+        max_min_dict[run] = (max_min['value_decimal__max'],
+                             max_min['value_decimal__min']) 
+
+    
     #Also need something like
     #trial_object = get_object_or_404(Trials, pk = trial_str)
     #if trial_object.plot_type == "HR":
@@ -243,7 +261,6 @@ def fieldbookView(request):#, trial_str): #Add family list here
 
     family_list = trial_plots.values("family").distinct()
     args = {}
-    #args['families'] = [] 
     args['preds'] = {}
 
     for fam_str in family_list:
@@ -253,21 +270,21 @@ def fieldbookView(request):#, trial_str): #Add family list here
             print("Error -- family " + fam_object + " not found.")
             continue
 
-    #    args['families'].append(fam_object)
-       
         #Assemble a dictionary of run:value pairs for all predictions
-        preds_dict = {}
-        for pred_run in preds_list:
+        pred_values_dict = {}
+        for pred_run in preds_dict.keys():
             #Change this to filter on run_text
-            pred_object = Predictions.objects.all().filter(pheno_text = pred_run,
+            pred_object = Predictions.objects.all().filter(run_text = pred_run,
                                                           family = fam_object)[0]
             pred_value = pred_object.value_decimal
+            pred_color = getScaleColor(pred_value, 
+                                       max_min_dict[pred_run][0],
+                                       max_min_dict[pred_run][1])
 
+            pred_values_dict[preds_dict[pred_run]] = [pred_value, pred_color]
 
-            preds_dict[pred_run] = [pred_value, getScaleColor(pred_value)]
-
-        preds_dict['family_object'] = fam_object
-        args['preds'][fam_object.family_id] = preds_dict
+        pred_values_dict['family_object'] = fam_object
+        args['preds'][fam_object.family_id] = pred_values_dict
 
 
     print(args['preds'])

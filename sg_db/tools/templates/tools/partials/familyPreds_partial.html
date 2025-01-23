@@ -1,10 +1,20 @@
-<div class="table-tools-wrapper">
-  <div class="entry-title">
 	{% for key, value in preds.items %}
+	    <div class = "fb-column-pred">
 		{% if key != "family_object" %}
-			{{ key }}
-			<h3 style="background-color:{{ value.1 }};">{{ value.0 }}</h3>
+		  <div class="detail-box">
+		    <div class = "detail_info">
+			<p> {{ value.0 }} </p>
+		    </div>
+		  </div>
+		  <div style="background-color:{{ value.1 }};" class="scale-box">
+		    <div class = "detail_info">
+			    <p> &#8202; </p>
+		    </div>
+		  </div>
 		{% endif %}
+	    </div>
 	{% endfor %}
-  </div>
+</div>
+</div>
+</div>
 </div>

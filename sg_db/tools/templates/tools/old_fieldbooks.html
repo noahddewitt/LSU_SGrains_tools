@@ -1,26 +1,24 @@
 <!DOCTYPE html>
-
-<html lang="en-US">
+{% extends "base.html" %}  
 
 {% load static %}
 
-<head>
-
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width" />
-
-<link rel="shortcut icon" href="{%  static 'sg_db/media/sun_placeholder.ico' %}">
-<link rel="stylesheet" href={% static 'sg_db/css/base_style.css' %}>
+{% block extrastyles %}
 
 <title> Test Fieldbook </title>
 
 <link rel="stylesheet" href={% static 'sg_db/css/fieldbook_style.css' %}>
 
 
+{% endblock %}
 
 {% block main %} 
 
 <main>
+    <h2> Fieldbook generator test </h2>
+
+	      <p> test test test test </p>
+	      <p> okay lets test iteration! </p>
 	      {% for family, preds in preds.items %}
 		{% include 'tools/partials/familyDetail_partial.html' %}
 		{% include 'tools/partials/familyPreds_partial.html' %}
