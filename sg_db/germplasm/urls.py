@@ -23,6 +23,6 @@ urlpatterns = [
         path("predictions", views.predictionsView, name = "predictions_view"),
         path("predictions/predictionsUpload", views.predictionsUploadView, name = "predictions_manual_upload"),
         path("predictions/predictionsTable", views.predictionsWrapperView, name = "predictions_wrapper_view"),
-        path("predictions/predictionsTable/predictionsContent", views.predictionsTableView, name = "predictions_table_view"),
+        path("predictions/predictionsTable/predictionsContent/<str:trial_filter>", views.predictionsTableView, name = "predictions_table_view"),
 
         ]

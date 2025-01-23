@@ -13,6 +13,9 @@ from django.http import HttpResponse, QueryDict, HttpResponseNotFound
 from django.template import loader, RequestContext
 from django.db.models import Q
 
+from germplasm.models import Trials
+from germplasm.forms import TrialEntryForm
+
 from .models import WCP_Entries, Crosses, Families
 from .tables import wcpTable, crossesTable, familiesTable
 from .forms import WCPEntryForm, UploadWCPForm, CrossesEntryForm, CrossesUpdateStatusForm, UploadCrossesForm, FamiliesEntryForm, UploadFamilyForm
@@ -187,6 +190,10 @@ def entryDetail(request, id_str):
         curModel = Families 
         curForm = FamiliesEntryForm
         htmlPath = "crossing/familyDetail.html"
+    elif re.match(r'^\w{3}\d{2}', id_str):
+        curModel = Trials
+        curForm = TrialEntryForm
+        htmlPath = "germplasm/trialDetail.html"
     else:
         print(id_str)
         return HttpResponseNotFound(id_str)
@@ -216,6 +223,9 @@ def entryEditForm(request, id_str):
     elif re.match(r'^LA', id_str):
         curModel = Families
         curForm = FamiliesEntryForm
+    elif re.match(r'^\w{3}\d{2}', id_str):
+        curModel = Trials
+        curForm = TrialEntryForm
     else:
         print(id_str)
         return HttpResponseNotFound(id_str)

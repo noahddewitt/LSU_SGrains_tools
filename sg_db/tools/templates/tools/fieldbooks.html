@@ -20,6 +20,15 @@
 {% block main %} 
 
 <main>
+
+	<h3> TRIAL NAME </h3>
+
+	<p> Date. </p>
+
+	<p> Table with prediction info.... </p>
+
+	<p> Pictures. </p>
+
 	      {% for family, preds in preds.items %}
 		{% include 'tools/partials/familyDetail_partial.html' %}
 		{% include 'tools/partials/familyPreds_partial.html' %}

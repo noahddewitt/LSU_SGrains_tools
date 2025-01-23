@@ -538,9 +538,14 @@ def predictionsWrapperView(request):
 #We need a selector that lets you choose individual TRIALS. Then it displays phenotypes for which all famliies in that trial have 
 #predictions available. Then a selector that allows for generation of output. 
 
-def predictionsTableView(request):
-    with connection.cursor () as cursor:
-        cursor.execute("select plots.trial_id, plots.family_id, preds.run_text  FROM germplasm_plots AS plots INNER JOIN germplasm_predictions AS preds ON plots.family_id = preds.family_id")
+def predictionsTableView(request, trial_filter = None):
+    query_str = "select plots.trial_id, plots.family_id, preds.run_text  FROM germplasm_plots AS plots INNER JOIN germplasm_predictions AS preds ON plots.family_id = preds.family_id"
+    if trial_filter != None:
+        query_str += " WHERE plots.trial_id IS '" + trial_filter + "'"
+
+    with connection.cursor() as cursor:
+
+        cursor.execute(query_str)
 
         columns = [col[0] for col in cursor.description]
         query_results = [
