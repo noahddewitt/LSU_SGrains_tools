@@ -25,5 +25,6 @@ class predictionTable(tables.Table):
     trial_id = tables.Column()
     run_text = tables.Column()
     families_count = tables.Column()
-
+#    select_run = tables.columns.TemplateColumn(template_name = "germplasm/partials/select_column.html", verbose_name = "Select") 
+    select_run = tables.CheckBoxColumn(accessor='run_text')
 

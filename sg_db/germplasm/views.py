@@ -565,8 +565,9 @@ def predictionsTableView(request, trial_filter = None):
 
     counts_table = predictionTable(query_counts_list)
 
-    tables.config.RequestConfig(request, paginate={"per_page": 15}).configure(counts_table)
-    return render(request, 'crossing/display_table.html', {"table" : counts_table})
+    #tables.config.RequestConfig(request, paginate={"per_page": 15}).configure(counts_table)
+    #return render(request, 'crossing/display_table.html', {"table" : counts_table})
+    return render(request, 'germplasm/partials/trial_predictions_table.html', {"table" : counts_table})
 
 def predictionsUploadView(request):
     if request.method == 'GET':

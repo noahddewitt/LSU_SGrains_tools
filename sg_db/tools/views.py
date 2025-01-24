@@ -239,25 +239,30 @@ def getScaleColor(value, max_val, min_val):
 def fieldbookView(request):#, trial_str): #Add family list here
     #Have to have a variable in the function call that holds all of the..j
     #The family list HAS to come from the trial. You will have to select the trial....
+    if request.method == 'POST':
+        #Don't fully understand this but Django doesn't like arrays from AJAX
+        requestDict = request.POST
+        selected_runs = request.POST.getlist("select_run")
 
-    trial_str = "CAN24LAB_F1"
+
+    trial_str = requestDict['trial_str']
 
     #Have to pass in which predictions we want to use as a list as well. The entry point into this will come from the trial predictions summary page.
     preds_dict = {"Jan25_DON_FHB_Jeanette":"DON_FHB", "Jan25_FDK_FHB_Fhb1_Jeanette":"FDK_FHB", "Jan25_Yield_C1_Jeanette":"Yield_C1", "Jan25_Yield_LATX_Jeanette": "Yield_LATX", "Jan25_TestWt_C1_awn5A_Jeanette": "TW"}
 
-    #Get max and min for these trials....
+    preds_dict = {}
     max_min_dict = {}
-    for run in preds_dict.keys():
+
+    for run in selected_runs:
+    #for run in preds_dict.keys():
         run_vals = Predictions.objects.all().filter(run_text = run)
+
+        run_pheno = run_vals.first().pheno_text
+        preds_dict[run] = run_pheno 
+
         max_min = run_vals.aggregate(Max("value_decimal"), Min("value_decimal"))
         max_min_dict[run] = (max_min['value_decimal__max'],
                              max_min['value_decimal__min']) 
-
-    
-    #Also need something like
-    #trial_object = get_object_or_404(Trials, pk = trial_str)
-    #if trial_object.plot_type == "HR":
-    #Actually, I don't think I will. 
 
     trial_plots = Plots.objects.filter(trial__trial_id__icontains=trial_str) 
 
@@ -305,7 +310,10 @@ def fieldbookView(request):#, trial_str): #Add family list here
         args['preds'][fam_object.family_id] = pred_values_dict
 
 
-    print(args['preds'])
+    #Change this?
     if request.method == 'GET':
         return render(request, "tools/fieldbooks.html", args)
+    else:
+        return render(request, "tools/fieldbooks.html", args)
+
 

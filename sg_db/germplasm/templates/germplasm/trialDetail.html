@@ -37,7 +37,7 @@
     </div>
   </div>
 	<br / >
-	
+
         <div hx-get="{% url 'germplasm:predictions_table_view' trial_filter=entry.trial_id %}" hx-trigger="load" hx-swap="outerHTML">
                 No predictions found for trial!
         </div>
@@ -49,6 +49,14 @@
 	<button hx-get="{% url 'crossing:entry_edit_form' entry.pk  %}"
 		hx-target="div.table-tools-wrapper"
 		> Edit </button>
+
+
+	<button hx-post="{% url 'tools:fieldbooks_view'  %}"
+		hx-target="body"
+		hx-include="[name='select_run']"
+		hx-vals='{"trial_str" : "{{ entry.trial_id }}"
+		}'
+		> Generate Fieldbook </button>
  </div>
 
 
