@@ -543,27 +543,38 @@ def predictionsTableView(request, trial_filter = None):
     if trial_filter != None:
         query_str += " WHERE plots.trial_id IS '" + trial_filter + "'"
 
-    with connection.cursor() as cursor:
+    print("TEST")
 
-        cursor.execute(query_str)
+    try:
+        with connection.cursor() as cursor:
 
-        columns = [col[0] for col in cursor.description]
-        query_results = [
-                dict(zip(columns, row))
-                for row in cursor.fetchall()
-                ]
+            cursor.execute(query_str)
 
-    #We did it manually, so we don't get a query object, but a dict
-    query_df = pd.DataFrame(query_results)
-    query_counts = query_df[['trial_id', 'run_text']].value_counts()
-    #Turns from series datatype back to dataframe
-    query_counts = query_counts.reset_index()
-    query_counts.columns = ['trial_id', 'run_text', 'families_count']
+            columns = [col[0] for col in cursor.description]
+            query_results = [
+                    dict(zip(columns, row))
+                    for row in cursor.fetchall()
+                    ]
 
-    query_counts_dict = query_counts.to_dict(orient = 'index')
-    query_counts_list = [value for value in query_counts_dict.values()]
+        #We did it manually, so we don't get a query object, but a dict
+        query_df = pd.DataFrame(query_results)
+        query_counts = query_df[['trial_id', 'run_text']].value_counts()
+        #Turns from series datatype back to dataframe
+        query_counts = query_counts.reset_index()
+        query_counts.columns = ['trial_id', 'run_text', 'families_count']
 
-    counts_table = predictionTable(query_counts_list)
+        query_counts_dict = query_counts.to_dict(orient = 'index')
+        query_counts_list = [value for value in query_counts_dict.values()]
+
+    except:
+        print("Error - SQL query failed. Is data loaded in both tables?")
+        query_counts_list = [{"trial_id": ""}, {"run_text":""}, {"families_count":0}]
+    
+    #Don't render checkboxcolumn in main index view
+    if trial_filter == None:
+        counts_table = predictionTable(query_counts_list, exclude = "select_run")
+    else:
+        counts_table = predictionTable(query_counts_list, exclude = "select_run")
 
     #tables.config.RequestConfig(request, paginate={"per_page": 15}).configure(counts_table)
     #return render(request, 'crossing/display_table.html', {"table" : counts_table})

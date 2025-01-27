@@ -28,3 +28,4 @@ class predictionTable(tables.Table):
 #    select_run = tables.columns.TemplateColumn(template_name = "germplasm/partials/select_column.html", verbose_name = "Select") 
     select_run = tables.CheckBoxColumn(accessor='run_text')
 
+
