@@ -53,8 +53,12 @@
 
 
 	      {% for family, preds in preds.items %}
-	        {% include 'tools/partials/familyDetail_partial.html' %}
-	        {% include 'tools/partials/familyPreds_partial.html' %}
+		{% if trial_info.trial_str in preds.family_object %}
+	        	{% include 'tools/partials/familyDetail_partial_check.html' %}
+		{% else %}
+	        	{% include 'tools/partials/familyDetail_partial.html' %}
+	        	{% include 'tools/partials/familyPreds_partial.html' %}
+		{% endif %}
 	        {% include 'tools/partials/family_plots_table.html' %}
 	      {% endfor %}
 

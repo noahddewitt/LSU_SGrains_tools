@@ -233,7 +233,7 @@ def getScaleColor(value, max_val, min_val):
     return hex_val
 
 def fieldbookView(request):
-    #The family list HAS to come from the trial.
+    #The family list comes from the set of plots in the trial.
     if request.method == 'POST':
         #Don't fully understand this but Django doesn't like arrays from AJAX
         requestDict = request.POST
@@ -242,16 +242,10 @@ def fieldbookView(request):
 
     trial_str = requestDict['trial_str']
 
-    print(trial_str)
-
-    #Have to pass in which predictions we want to use as a list as well. The entry point into this will come from the trial predictions summary page.
-   # preds_dict = {"Jan25_DON_FHB_Jeanette":"DON_FHB", "Jan25_FDK_FHB_Fhb1_Jeanette":"FDK_FHB", "Jan25_Yield_C1_Jeanette":"Yield_C1", "Jan25_Yield_LATX_Jeanette": "Yield_LATX", "Jan25_TestWt_C1_awn5A_Jeanette": "TW"}
-
     preds_dict = {}
     max_min_dict = {}
 
     for run in selected_runs:
-    #for run in preds_dict.keys():
         run_vals = Predictions.objects.all().filter(run_text = run)
 
         run_pheno = run_vals.first().pheno_text
@@ -261,61 +255,117 @@ def fieldbookView(request):
         max_min_dict[run] = (max_min['value_decimal__max'],
                              max_min['value_decimal__min']) 
 
-    print(preds_dict)
     trial_plots = Plots.objects.filter(trial__trial_id__icontains=trial_str) 
 
-    family_list = trial_plots.values("family").distinct()
-    print(family_list)
+
+    #When we pull out the family dict, the queryset seems to automatically re-order it.
+    #So we need to manually adjust to order
+    trial_plot_families = trial_plots.values_list("plot_id", "family")
+    trial_plot_families = list(trial_plot_families)
+
+    #Default is to sort by first value in tuple. 
+    #Plot IDs are generated in such a way that they sort correctly.
+    trial_plot_families.sort()
+
+    trial_family_transitions = []
+    old_family = None
+
+    for plot_family in trial_plot_families:
+        plt_str = plot_family[0]
+        fam_str = plot_family[1]
+
+        #None will always be followed by a transition
+        if (old_family is None) or (old_family != fam_str): 
+            trial_family_transitions.append((plt_str, fam_str,))
+            old_family = fam_str
+
     args = {}
     args['preds'] = {}
 
-    for fam_str in family_list:
-        print(fam_str['family'])
+    #Iterate through plots to find the transition points between families and plots. All available plots will be queried at once, and filtered to remove extraneous ones..
+    for plot_family in trial_family_transitions:
+        plt_str = plot_family[0]
+        fam_str = plot_family[1]
+
         #Prepare info for family details and predictions
         try:
-            fam_object = Families.objects.get(pk = fam_str['family'])
+            fam_object = Families.objects.get(pk = fam_str)
         except:
-            #Checks/fills have None family
-            if fam_str['family'] != None: 
-                print("Error -- family " + str(fam_str['family']) + " not found.")
-            continue
+            print("EXCEPT!")
+            if not fam_str is None:
+                print("Error -- family " + str(fam_str) + " not found.")
+                fam_str = None
 
-        #Assemble a dictionary of run:value pairs for all predictions
-        pred_values_dict = {}
-        for pred_run in preds_dict.keys():
-            #At the moment, this fails if ANY predictions are missing. Sometimes predictions will be missing!
-            pred_object = Predictions.objects.all().filter(run_text = pred_run,
-                                                          family = fam_object)
-
-
-            if pred_object.exists():
-                pred_value = pred_object[0].value_decimal
-            else:
-                pred_value = 0
-
-            pred_color = getScaleColor(pred_value, 
-                                       max_min_dict[pred_run][0],
-                                       max_min_dict[pred_run][1])
-
-            pred_values_dict[preds_dict[pred_run]] = [pred_value, pred_color]
+        if not fam_str is None:
+            #Assemble a dictionary of run:value pairs for all predictions
+            pred_values_dict = {}
+            for pred_run in preds_dict.keys():
+                pred_object = Predictions.objects.all().filter(run_text = pred_run,
+                                                              family = fam_object)
 
 
-        #Individual plots associated with trial and family
-        family_plots = Plots.objects.all().filter(trial_id = trial_str, family_id = fam_str['family'])
+                if pred_object.exists():
+                    pred_value = pred_object[0].value_decimal
+                else:
+                    pred_value = 0
 
-        #Represent plots as dict
-        family_plots_table = FamilyPlotsTable(family_plots) 
+                pred_color = getScaleColor(pred_value, 
+                                           max_min_dict[pred_run][0],
+                                           max_min_dict[pred_run][1])
 
-        #For each trial and family, there should only be one generation type
-        first_family_plot = family_plots.values()[0]
-
-        generation_str = str(first_family_plot["gen_derived_int"]) + ":" + str(first_family_plot["gen_inbred_int"])
+                pred_values_dict[preds_dict[pred_run]] = [pred_value, pred_color]
 
 
-        pred_values_dict['family_object'] = fam_object
-        pred_values_dict['family_plots_table'] =  family_plots_table
-        pred_values_dict['family_plots_gen'] = generation_str
-        args['preds'][fam_object.family_id] = pred_values_dict
+            #All plots associated with trial and family
+            #There are probably changes needed here if fam gets split up.
+            family_plots = Plots.objects.all().filter(trial_id = trial_str, family_id = fam_str)
+
+            family_plots_table = FamilyPlotsTable(family_plots) 
+
+            #For each trial and family, there should only be one generation type
+            first_family_plot = family_plots.values()[0]
+
+            generation_str = str(first_family_plot["gen_derived_int"]) + ":" + str(first_family_plot["gen_inbred_int"])
+
+
+            pred_values_dict['family_object'] = fam_object
+            pred_values_dict['family_plots_table'] =  family_plots_table
+            pred_values_dict['family_plots_gen'] = generation_str
+
+            #Have to repeat if found in multiple places
+            if fam_str in args['preds'].keys():
+                repeat_list = [fam for fam in args['preds'].keys() if fam_str in fam]
+
+                #Check if already repeats, and gets last iterated if so
+                if len(repeat_list) == 1:
+                    fam_str = fam_str + "_2"
+                else:
+                    repeat_list.sort()
+                    last_repeat = repeat_list[len(repeat_list)-1]
+                    #In 75 years I need to change 8 to 9
+                    fam_str = fam_str + "_" + (int(last_repeat)[8] + 1)
+
+            args['preds'][fam_str] = pred_values_dict
+        else:
+            famless_dict = {}
+
+            famless_plot = Plots.objects.all().filter(plot_id = plt_str)
+            famless_table = FamilyPlotsTable(famless_plot) 
+
+            print(famless_table)
+            
+            #Keys have to be unique. In the template, will test for presence
+            #Of trial str as substr of family_object
+            famless_dict['family_object'] = plt_str
+            famless_dict['family_plots_table'] =  famless_table
+            famless_dict['family_plots_gen'] = ""
+
+            args['preds'][plt_str] = famless_dict
+
+
+    for key,value in args['preds'].items():
+        print(key)
+        print(args['preds'][key])
 
     #Trial information for tital page
     trial_object = Trials.objects.get(pk = trial_str)
