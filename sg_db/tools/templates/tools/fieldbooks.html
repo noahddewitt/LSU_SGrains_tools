@@ -1,39 +1,65 @@
-<!DOCTYPE html>
-
-<html lang="en-US">
-
-{% load django_tables2 %}
 {% load static %}
 
-<head>
+{% block extrastyles %}
+	<title> Test Fieldbook </title>
+	<link rel="stylesheet" href={% static 'sg_db/css/fieldbook_style.css' %}>
+{% endblock %}
 
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width" />
+{% block main %}
 
-<link rel="shortcut icon" href="{%  static 'sg_db/media/sun_placeholder.ico' %}">
-<link rel="stylesheet" href={% static 'sg_db/css/base_style.css' %}>
-<link rel="stylesheet" href={% static 'sg_db/css/table_style.css' %}>
-<link rel="stylesheet" href={% static 'sg_db/css/fieldbook_style.css' %}>
 
-<title> Test Fieldbook </title>
-
-{% block main %} 
-
+<div class="fieldbook">
 <main>
+  <div class="title-page">
+	<h1> {{ trial_info.trial_str }} </h1>
+	<h1 style="font-size:18px;"> Generated Fieldbook </h1>
+	<h1 style="font-size:18px;color:red;"> DRAFT FORMATTING </h1>
 
-	<h3> TRIAL NAME </h3>
+	<div class="outer-container-title">
+        <div class="title-column">
+	<h2> Trial Details: </h2>
+	<div class="trial-info">
+        <div class="detail-box">
+	  <h3> Year: <span style="font-style:italic;"> {{ trial_info.trial_year}} </span> </h3>
+        </div>
+        <div class="detail-box">
+          <h3> Location: <span style="font-style:italic;">{{ trial_info.trial_loc}} </span></h3>
+        </div>
+        <div class="detail-box">
+	  <h3> Trial type: <span style="font-style:italic;">{{ trial_info.trial_type }} </span> </h3>
+	</div>
+	</div>
+	</div>
+	<div class="title-column">
+	<h2> Predicted Phenotypes: </h2>
 
-	<p> Date. </p>
+	{% for run, pheno in trial_info.fb_preds.items %}
+        <div class="detail-box">
+	        <h3> {{ pheno }} : <span style="font-size:14px;font-style:italic;"> {{ run }} </span> </h3>
+        </div>
+	{% endfor %}
+	</div>
+	</div>
 
-	<p> Table with prediction info.... </p>
+	<div class="main_image">
+	        <img src="{% static 'sg_db/media/headrows.jpeg' %}" alt="headrows_image" style="width:800px;height:602px;border:6px solid #555;">
+	</div>
 
-	<p> Pictures. </p>
+        <div class="detail-box">
+	        <p> Noah DeWitt / NDeWitt@agcenter.lsu.edu / (352)-293-5437 </p>
+	        <p> Stephen Harrison / SHarrison@agcenter.lsu.edu / (225)-281-9446 </p>
+	</div>
+  </div>
+
 
 	      {% for family, preds in preds.items %}
-		{% include 'tools/partials/familyDetail_partial.html' %}
-		{% include 'tools/partials/familyPreds_partial.html' %}
-		{% include 'tools/partials/family_plots_table.html' %}
+	        {% include 'tools/partials/familyDetail_partial.html' %}
+	        {% include 'tools/partials/familyPreds_partial.html' %}
+	        {% include 'tools/partials/family_plots_table.html' %}
 	      {% endfor %}
-</main>
 
-{% endblock %} 
+</main>
+</div>
+
+{% endblock %}
+

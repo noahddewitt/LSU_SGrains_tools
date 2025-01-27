@@ -216,23 +216,19 @@ def export_csv(request, requested_model, filter_str = ""):
     return response
 
 def getScaleColor(value, max_val, min_val):
-    scaled_value = value / (max_val - min_val)
-
     scale_pos = ["#ffffe0", "#ebeed3", "#bec8b5", "#83948a", "#395653", "#003233"]
-    scale_neg = ["#580000", "#803522", "#b48166", "#d8bfa0", "#f3eccc", "#ffffe0"]
+    scale_neg = ["#ffffe0", "#f3eccc", "#d8bfa0", "#b48166", "#803522", "#580000"]
 
     #I'm assuming max is not negative.
-    if (value > 0):
+    if value >= 0:
         scaled_value = value / max_val
         scaled_index = int(round(scaled_value * 5, 0))
         hex_val = scale_pos[scaled_index]
     else:
         #Maintains negative value
-        scaled_value = -1 * (value / min_val)
+        scaled_value = value / min_val
         scaled_index = int(round(scaled_value * 5, 0))
         hex_val = scale_neg[scaled_index]
-    
-    #hex_val = "#{:02x}{:02x}{:02x}".format(r_val, g_val, b_val)
 
     return hex_val
 
@@ -321,11 +317,18 @@ def fieldbookView(request):
         pred_values_dict['family_plots_gen'] = generation_str
         args['preds'][fam_object.family_id] = pred_values_dict
 
+    #Trial information for tital page
+    trial_object = Trials.objects.get(pk = trial_str)
+
+    args['trial_info'] = {'trial_str':trial_str,
+                          'trial_year': trial_object.year_text,
+                          'trial_loc': trial_object.location_text,
+                          'trial_type': trial_object.plot_type,
+                          'fb_preds': preds_dict}
+
+
 
     #Change this?
-    if request.method == 'GET':
-        return render(request, "tools/fieldbooks.html", args)
-    else:
-        return render(request, "tools/fieldbooks.html", args)
+    return render(request, "tools/fieldbooks.html", args)
 
 
