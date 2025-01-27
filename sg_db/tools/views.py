@@ -236,9 +236,8 @@ def getScaleColor(value, max_val, min_val):
 
     return hex_val
 
-def fieldbookView(request):#, trial_str): #Add family list here
-    #Have to have a variable in the function call that holds all of the..j
-    #The family list HAS to come from the trial. You will have to select the trial....
+def fieldbookView(request):
+    #The family list HAS to come from the trial.
     if request.method == 'POST':
         #Don't fully understand this but Django doesn't like arrays from AJAX
         requestDict = request.POST
@@ -247,8 +246,10 @@ def fieldbookView(request):#, trial_str): #Add family list here
 
     trial_str = requestDict['trial_str']
 
+    print(trial_str)
+
     #Have to pass in which predictions we want to use as a list as well. The entry point into this will come from the trial predictions summary page.
-    preds_dict = {"Jan25_DON_FHB_Jeanette":"DON_FHB", "Jan25_FDK_FHB_Fhb1_Jeanette":"FDK_FHB", "Jan25_Yield_C1_Jeanette":"Yield_C1", "Jan25_Yield_LATX_Jeanette": "Yield_LATX", "Jan25_TestWt_C1_awn5A_Jeanette": "TW"}
+   # preds_dict = {"Jan25_DON_FHB_Jeanette":"DON_FHB", "Jan25_FDK_FHB_Fhb1_Jeanette":"FDK_FHB", "Jan25_Yield_C1_Jeanette":"Yield_C1", "Jan25_Yield_LATX_Jeanette": "Yield_LATX", "Jan25_TestWt_C1_awn5A_Jeanette": "TW"}
 
     preds_dict = {}
     max_min_dict = {}
@@ -264,27 +265,38 @@ def fieldbookView(request):#, trial_str): #Add family list here
         max_min_dict[run] = (max_min['value_decimal__max'],
                              max_min['value_decimal__min']) 
 
+    print(preds_dict)
     trial_plots = Plots.objects.filter(trial__trial_id__icontains=trial_str) 
 
     family_list = trial_plots.values("family").distinct()
+    print(family_list)
     args = {}
     args['preds'] = {}
 
     for fam_str in family_list:
+        print(fam_str['family'])
         #Prepare info for family details and predictions
         try:
             fam_object = Families.objects.get(pk = fam_str['family'])
         except:
-            print("Error -- family " + fam_object + " not found.")
+            #Checks/fills have None family
+            if fam_str['family'] != None: 
+                print("Error -- family " + str(fam_str['family']) + " not found.")
             continue
 
         #Assemble a dictionary of run:value pairs for all predictions
         pred_values_dict = {}
         for pred_run in preds_dict.keys():
-            #Change this to filter on run_text
+            #At the moment, this fails if ANY predictions are missing. Sometimes predictions will be missing!
             pred_object = Predictions.objects.all().filter(run_text = pred_run,
-                                                          family = fam_object)[0]
-            pred_value = pred_object.value_decimal
+                                                          family = fam_object)
+
+
+            if pred_object.exists():
+                pred_value = pred_object[0].value_decimal
+            else:
+                pred_value = 0
+
             pred_color = getScaleColor(pred_value, 
                                        max_min_dict[pred_run][0],
                                        max_min_dict[pred_run][1])

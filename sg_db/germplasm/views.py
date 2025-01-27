@@ -543,8 +543,6 @@ def predictionsTableView(request, trial_filter = None):
     if trial_filter != None:
         query_str += " WHERE plots.trial_id IS '" + trial_filter + "'"
 
-    print("TEST")
-
     try:
         with connection.cursor() as cursor:
 
@@ -574,7 +572,7 @@ def predictionsTableView(request, trial_filter = None):
     if trial_filter == None:
         counts_table = predictionTable(query_counts_list, exclude = "select_run")
     else:
-        counts_table = predictionTable(query_counts_list, exclude = "select_run")
+        counts_table = predictionTable(query_counts_list)
 
     #tables.config.RequestConfig(request, paginate={"per_page": 15}).configure(counts_table)
     #return render(request, 'crossing/display_table.html', {"table" : counts_table})
