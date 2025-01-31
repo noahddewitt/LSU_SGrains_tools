@@ -291,7 +291,6 @@ def fieldbookView(request):
         try:
             fam_object = Families.objects.get(pk = fam_str)
         except:
-            print("EXCEPT!")
             if not fam_str is None:
                 print("Error -- family " + str(fam_str) + " not found.")
                 fam_str = None
@@ -351,8 +350,6 @@ def fieldbookView(request):
 
             famless_plot = Plots.objects.all().filter(plot_id = plt_str)
             famless_table = FamilyPlotsTable(famless_plot) 
-
-            print(famless_table)
             
             #Keys have to be unique. In the template, will test for presence
             #Of trial str as substr of family_object
@@ -362,12 +359,7 @@ def fieldbookView(request):
 
             args['preds'][plt_str] = famless_dict
 
-
-    for key,value in args['preds'].items():
-        print(key)
-        print(args['preds'][key])
-
-    #Trial information for tital page
+    #Trial information for title page
     trial_object = Trials.objects.get(pk = trial_str)
 
     args['trial_info'] = {'trial_str':trial_str,
@@ -376,9 +368,6 @@ def fieldbookView(request):
                           'trial_type': trial_object.plot_type,
                           'fb_preds': preds_dict}
 
-
-
-    #Change this?
     return render(request, "tools/fieldbooks.html", args)
 
 

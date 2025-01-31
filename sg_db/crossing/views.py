@@ -94,12 +94,21 @@ def crossesWrapperView(request):
                 form.save()
 
             else:
-                for date_format in ("%Y-%m-%d_%H_%M_%S_%f", "%m/%d/%Y",  "%m/%d/%y", "%m-%d-%Y"):
-                    try:
-                        crossTime =  datetime.strptime(row['timestamp'], date_format)
-                    except:
-                        pass
+                date_formats = ("%Y-%m-%d_%H_%M_%S_%f", "%Y-%m-%d", "%m/%d/%Y",  "%m/%d/%y", "%m-%d-%Y", )
 
+                format_i = 0
+                crossTime = None
+                while format_i <= len(date_formats):
+                    try:
+                        crossTime =  datetime.strptime(row['timestamp'], date_formats[format_i])
+                        format_i = 100
+                    except:
+                        format_i += 1
+
+                if crossTime == None:
+                    print("No suitable formats match datetime string:")
+                    print("|"+row['timestamp']+"|")
+                    break
 
                 #Get year from parent one ID
                 curYear = "20" + re.search("(\d{2})_", row['femaleObsUnitDbId']).group(1)

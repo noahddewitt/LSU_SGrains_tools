@@ -427,13 +427,23 @@ def plotUploadView(request):
 
                 row_trial = Trials.objects.get(trial_id = row['trial'])
 
+                try:
+                    gen_derived_int = row['gen_derived_int']
+                except:
+                    gen_derived_int = None
+
+                try:
+                    gen_inbred_int = row['gen_inbred_int']
+                except:
+                    gen_inbred_int = None
+
                 modRow = {'plot_id' : row['plot_id'],
                           'source_stock' : row_stock,
                           'family' : row_family,
                           'trial' : row_trial,
                           'desig_text' : row['desig_text'],
-                          'gen_derived_int' : int(row['gen_derived_int']),
-                          'gen_inbred_int' : int(row['gen_inbred_int']),
+                          'gen_derived_int' : gen_derived_int,
+                          'gen_inbred_int' : gen_inbred_int,
                           'notes_text' : row['notes_text'],
                           'entry_fixed' : True}
 
