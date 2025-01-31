@@ -53,7 +53,7 @@
 
 
 	      {% for family, preds in preds.items %}
-		{% if trial_info.trial_str in preds.family_object %}
+		{% if "_" in preds.family_object %}
 	        	{% include 'tools/partials/familyDetail_partial_check.html' %}
 		{% else %}
 	        	{% include 'tools/partials/familyDetail_partial.html' %}

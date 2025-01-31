@@ -276,13 +276,21 @@ def fieldbookView(request):
 
         #None will always be followed by a transition
         if (old_family is None) or (old_family != fam_str): 
-            trial_family_transitions.append((plt_str, fam_str,))
+            #Append old_family so that the transition is inclusive
+            trial_family_transitions.append((plt_str, old_family,)) 
             old_family = fam_str
+
+    #Finish up the last family
+    #The reason we don't need a fam_str one too is because the for loop iterates through plots,
+    #not transitions, so that when the last for loop ends the transition has already happened
+    trial_family_transitions.append((plt_str, old_family,)) 
 
     args = {}
     args['preds'] = {}
 
     #Iterate through plots to find the transition points between families and plots. All available plots will be queried at once, and filtered to remove extraneous ones..
+    #We store the previous plot so we can filter by a range
+    prev_plt_str = None
     for plot_family in trial_family_transitions:
         plt_str = plot_family[0]
         fam_str = plot_family[1]
@@ -316,8 +324,10 @@ def fieldbookView(request):
 
 
             #All plots associated with trial and family
-            #There are probably changes needed here if fam gets split up.
-            family_plots = Plots.objects.all().filter(trial_id = trial_str, family_id = fam_str)
+            #Select just the range defined by the last transition point and the current.
+            #If the fmaily is just in this range, doesn't affect antyhing. If families are split up tho..
+            family_plots = Plots.objects.all().filter(trial_id = trial_str, family_id = fam_str,
+                    plot_id__range = [prev_plt_str, plt_str])
 
             family_plots_table = FamilyPlotsTable(family_plots) 
 
@@ -342,22 +352,26 @@ def fieldbookView(request):
                     repeat_list.sort()
                     last_repeat = repeat_list[len(repeat_list)-1]
                     #In 75 years I need to change 8 to 9
-                    fam_str = fam_str + "_" + (int(last_repeat)[8] + 1)
+                    fam_str = fam_str + "_" + str(int(last_repeat[8]) + 1)
 
             args['preds'][fam_str] = pred_values_dict
         else:
             famless_dict = {}
 
-            famless_plot = Plots.objects.all().filter(plot_id = plt_str)
+            famless_plot = Plots.objects.all().filter(plot_id = prev_plt_str)
             famless_table = FamilyPlotsTable(famless_plot) 
             
             #Keys have to be unique. In the template, will test for presence
             #Of trial str as substr of family_object
-            famless_dict['family_object'] = plt_str
+            famless_dict['family_object'] = prev_plt_str
             famless_dict['family_plots_table'] =  famless_table
             famless_dict['family_plots_gen'] = ""
 
-            args['preds'][plt_str] = famless_dict
+            #this avoids writing an empty family for the initial plot in the loop
+            if prev_plt_str != None:
+                args['preds'][plt_str] = famless_dict
+
+        prev_plt_str = plt_str
 
     #Trial information for title page
     trial_object = Trials.objects.get(pk = trial_str)
