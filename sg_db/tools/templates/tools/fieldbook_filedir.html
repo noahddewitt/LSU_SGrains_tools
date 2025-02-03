@@ -1,0 +1,23 @@
+{% load static %}
+
+{% block extrastyles %}
+	<title> Headrow Fieldbooks </title>
+	<link rel="stylesheet" href={% static 'sg_db/css/fieldbook_style.css' %}>
+{% endblock %}
+
+{% block main %}
+
+
+<div class="fieldbook">
+<main>
+
+  {% for file in fieldbook_files %}
+
+  	<p> {{ file }} </p>
+
+  {% endfor %}
+</main>
+</div>
+
+{% endblock %}
+

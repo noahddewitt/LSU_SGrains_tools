@@ -1,4 +1,5 @@
 import csv
+import os
 import re
 import requests
 import shutil
@@ -7,6 +8,7 @@ from datetime import date, datetime
 from io import TextIOWrapper
 from pathlib import Path
 
+from django.template.loader import render_to_string
 from django.shortcuts import get_object_or_404, render
 from django.db.models import Q, Min, Max
 
@@ -232,59 +234,7 @@ def getScaleColor(value, max_val, min_val):
 
     return hex_val
 
-def fieldbookView(request):
-    #The family list comes from the set of plots in the trial.
-    if request.method == 'POST':
-        #Don't fully understand this but Django doesn't like arrays from AJAX
-        requestDict = request.POST
-        selected_runs = request.POST.getlist("select_run")
-
-
-    trial_str = requestDict['trial_str']
-
-    preds_dict = {}
-    max_min_dict = {}
-
-    for run in selected_runs:
-        run_vals = Predictions.objects.all().filter(run_text = run)
-
-        run_pheno = run_vals.first().pheno_text
-        preds_dict[run] = run_pheno 
-
-        max_min = run_vals.aggregate(Max("value_decimal"), Min("value_decimal"))
-        max_min_dict[run] = (max_min['value_decimal__max'],
-                             max_min['value_decimal__min']) 
-
-    trial_plots = Plots.objects.filter(trial__trial_id__icontains=trial_str) 
-
-
-    #When we pull out the family dict, the queryset seems to automatically re-order it.
-    #So we need to manually adjust to order
-    trial_plot_families = trial_plots.values_list("plot_id", "family")
-    trial_plot_families = list(trial_plot_families)
-
-    #Default is to sort by first value in tuple. 
-    #Plot IDs are generated in such a way that they sort correctly.
-    trial_plot_families.sort()
-
-    trial_family_transitions = []
-    old_family = None
-
-    for plot_family in trial_plot_families:
-        plt_str = plot_family[0]
-        fam_str = plot_family[1]
-
-        #None will always be followed by a transition
-        if (old_family is None) or (old_family != fam_str): 
-            #Append old_family so that the transition is inclusive
-            trial_family_transitions.append((plt_str, old_family,)) 
-            old_family = fam_str
-
-    #Finish up the last family
-    #The reason we don't need a fam_str one too is because the for loop iterates through plots,
-    #not transitions, so that when the last for loop ends the transition has already happened
-    trial_family_transitions.append((plt_str, old_family,)) 
-
+def getFieldbookArgs(trial_family_transitions, preds_dict, max_min_dict, trial_str):
     args = {}
     args['preds'] = {}
 
@@ -382,6 +332,113 @@ def fieldbookView(request):
                           'trial_type': trial_object.plot_type,
                           'fb_preds': preds_dict}
 
-    return render(request, "tools/fieldbooks.html", args)
+    return(args)
+
+def plotIdToInt(plot_id_str):
+        plot_int = int(re.search(r'\d*$', plot_id_str).group(0))
+        return(plot_int)
+
+def fieldbookView(request):
+    #The family list comes from the set of plots in the trial.
+    if request.method == 'POST':
+        #Don't fully understand this but Django doesn't like arrays from AJAX
+        requestDict = request.POST
+        selected_runs = request.POST.getlist("select_run")
+
+
+    trial_str = requestDict['trial_str']
+
+    preds_dict = {}
+    max_min_dict = {}
+
+    for run in selected_runs:
+        run_vals = Predictions.objects.all().filter(run_text = run)
+
+        run_pheno = run_vals.first().pheno_text
+        preds_dict[run] = run_pheno 
+
+        max_min = run_vals.aggregate(Max("value_decimal"), Min("value_decimal"))
+        max_min_dict[run] = (max_min['value_decimal__max'],
+                             max_min['value_decimal__min']) 
+
+    trial_plots = Plots.objects.filter(trial__trial_id__icontains=trial_str) 
+
+
+    #When we pull out the family dict, the queryset seems to automatically re-order it.
+    #So we need to manually adjust to order
+    trial_plot_families = trial_plots.values_list("plot_id", "family")
+    trial_plot_families = list(trial_plot_families)
+
+    #Default is to sort by first value in tuple. 
+    #Plot IDs are generated in such a way that they sort correctly.
+    trial_plot_families.sort()
+
+    trial_family_transitions = []
+    old_family = None
+
+    for plot_family in trial_plot_families:
+        plt_str = plot_family[0]
+        fam_str = plot_family[1]
+
+        #None will always be followed by a transition
+        if (old_family is None) or (old_family != fam_str): 
+            #Append old_family so that the transition is inclusive
+            trial_family_transitions.append((plt_str, old_family,)) 
+            old_family = fam_str
+
+    #Finish up the last family
+    #The reason we don't need a fam_str one too is because the for loop iterates through plots,
+    #not transitions, so that when the last for loop ends the transition has already happened
+    trial_family_transitions.append((plt_str, old_family,)) 
+
+    trial_type = Trials.objects.values_list("plot_type", flat=True).get(pk=trial_str)
+
+    if trial_type == "HR":
+        #Generate multiple fieldbooks in 1,000 HR increments
+        cur_trial_family_transitions = []
+        cur_trial_start = plotIdToInt(trial_family_transitions[0][0]) 
+
+        for plot_fam in trial_family_transitions:
+            cur_plot_int = plotIdToInt(plot_fam[0])
+
+            #Always have to do this -- first plot of new set will trigger rendering of last
+            cur_trial_family_transitions.append(plot_fam)
+
+           #change this to include testing if last in for loop 
+           #and flip it.
+            if (cur_plot_int - cur_trial_start) < 1000:
+                print(cur_plot_int)
+
+            else:
+                print(plot_fam)
+
+                print(cur_trial_family_transitions)
+
+                args = getFieldbookArgs(cur_trial_family_transitions, preds_dict, max_min_dict, trial_str) 
+                print(args)
+
+                cur_trial_start = cur_plot_int
+                cur_trial_family_transitions = []
+
+                html_content = render_to_string("tools/fieldbooks.html", args)
+                outfile_str = "/var/www/sg_db/static/tools/temporary_html/fieldbook_" + str(cur_plot_int) + ".html"
+                with open(outfile_str, 'w') as file:
+                    file.write(html_content)
+
+        #return render(request, "tools/fieldbooks.html", args)
+        fieldbook_files = []
+
+        #Should include code here for making and deleting a folder with html files for a test and date. 
+
+        for file in os.listdir("/var/www/sg_db/static/tools/temporary_html/"):
+            fieldbook_files.append(file)
+
+        args['fieldbook_files'] = fieldbook_files
+
+        return render(request, "tools/fieldbook_filedir.html", args)
+
+    else:
+        args = getFieldbookArgs(trial_family_transitions, preds_dict, max_min_dict, trial_str)        
+        return render(request, "tools/fieldbooks.html", args)
 
 
