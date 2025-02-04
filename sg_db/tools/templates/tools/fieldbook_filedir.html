@@ -10,12 +10,13 @@
 
 <div class="fieldbook">
 <main>
-
-  {% for file in fieldbook_files %}
-
-  	<p> {{ file }} </p>
-
+  <ul>
+  {% for file_str in fieldbook_files %}
+  	<li><a href="{% url 'tools:render_fieldbook_view' file_str %}">
+		{{ file_str }}
+		</a></li>
   {% endfor %}
+  </ul>
 </main>
 </div>
 

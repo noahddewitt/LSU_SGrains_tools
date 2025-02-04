@@ -8,9 +8,10 @@ from datetime import date, datetime
 from io import TextIOWrapper
 from pathlib import Path
 
-from django.template.loader import render_to_string
 from django.shortcuts import get_object_or_404, render
 from django.db.models import Q, Min, Max
+from django.conf import settings
+from django.template.loader import render_to_string
 
 from django.http import HttpResponse
 
@@ -241,6 +242,13 @@ def getFieldbookArgs(trial_family_transitions, preds_dict, max_min_dict, trial_s
     #Iterate through plots to find the transition points between families and plots. All available plots will be queried at once, and filtered to remove extraneous ones..
     #We store the previous plot so we can filter by a range
     prev_plt_str = None
+
+    #The first will get skipped, which is okay if we start with a 001, but if we start with an 002 it omits the 001.
+    #This is an easy way to get the 001. If you're not an 002 something's wrong! 
+    if re.search("\d$", trial_family_transitions[0][0]).group(0) == "2":
+        first_plt_str = trial_family_transitions[0][0]
+        prev_plt_str = first_plt_str[:-1] + "1"
+
     for plot_family in trial_family_transitions:
         plt_str = plot_family[0]
         fam_str = plot_family[1]
@@ -249,6 +257,7 @@ def getFieldbookArgs(trial_family_transitions, preds_dict, max_min_dict, trial_s
         try:
             fam_object = Families.objects.get(pk = fam_str)
         except:
+            print(plt_str)
             if not fam_str is None:
                 print("Error -- family " + str(fam_str) + " not found.")
                 fam_str = None
@@ -310,6 +319,8 @@ def getFieldbookArgs(trial_family_transitions, preds_dict, max_min_dict, trial_s
 
             famless_plot = Plots.objects.all().filter(plot_id = prev_plt_str)
             famless_table = FamilyPlotsTable(famless_plot) 
+
+            print(famless_plot.values_list())
             
             #Keys have to be unique. In the template, will test for presence
             #Of trial str as substr of family_object
@@ -394,34 +405,39 @@ def fieldbookView(request):
     trial_type = Trials.objects.values_list("plot_type", flat=True).get(pk=trial_str)
 
     if trial_type == "HR":
+        print(trial_family_transitions)
         #Generate multiple fieldbooks in 1,000 HR increments
         cur_trial_family_transitions = []
         cur_trial_start = plotIdToInt(trial_family_transitions[0][0]) 
 
-        for plot_fam in trial_family_transitions:
+        for i, plot_fam in enumerate(trial_family_transitions, start = 1):
             cur_plot_int = plotIdToInt(plot_fam[0])
+
+            print("X")
+            print(plot_fam[0])
+            print(plot_fam[1])
 
             #Always have to do this -- first plot of new set will trigger rendering of last
             cur_trial_family_transitions.append(plot_fam)
 
-           #change this to include testing if last in for loop 
-           #and flip it.
-            if (cur_plot_int - cur_trial_start) < 1000:
-                print(cur_plot_int)
-
-            else:
+            if ((cur_plot_int - cur_trial_start) >= 1000) or (i == len(trial_family_transitions)):
                 print(plot_fam)
 
                 print(cur_trial_family_transitions)
 
                 args = getFieldbookArgs(cur_trial_family_transitions, preds_dict, max_min_dict, trial_str) 
+
                 print(args)
 
                 cur_trial_start = cur_plot_int
                 cur_trial_family_transitions = []
 
                 html_content = render_to_string("tools/fieldbooks.html", args)
-                outfile_str = "/var/www/sg_db/static/tools/temporary_html/fieldbook_" + str(cur_plot_int) + ".html"
+
+                base_dir = str(settings.BASE_DIR)
+                html_dir = base_dir + "/tools/templates/temporary_fieldbooks/"
+
+                outfile_str = html_dir + trial_str + "_" + str(cur_plot_int) + ".html"
                 with open(outfile_str, 'w') as file:
                     file.write(html_content)
 
@@ -430,7 +446,7 @@ def fieldbookView(request):
 
         #Should include code here for making and deleting a folder with html files for a test and date. 
 
-        for file in os.listdir("/var/www/sg_db/static/tools/temporary_html/"):
+        for file in os.listdir(html_dir):
             fieldbook_files.append(file)
 
         args['fieldbook_files'] = fieldbook_files
@@ -441,4 +457,8 @@ def fieldbookView(request):
         args = getFieldbookArgs(trial_family_transitions, preds_dict, max_min_dict, trial_str)        
         return render(request, "tools/fieldbooks.html", args)
 
+def renderFieldbookView(request, file_str):
 
+    fieldbook_path = "temporary_fieldbooks/"  + file_str 
+
+    return render(None, fieldbook_path)
