@@ -200,6 +200,8 @@ def export_csv(request, requested_model, filter_str = ""):
         if field.concrete == True:
             field_list.append(field.name)
 
+    print(field_list)
+
     writer.writerow(field_list)
 
     #The issue here is with get_fields getting fields from the plot instead of cross.. no idea why.
@@ -343,6 +345,47 @@ def getFieldbookArgs(trial_family_transitions, preds_dict, max_min_dict, trial_s
 
     return(args)
 
+def orderRuns(run_array):
+    #We want to order on phenotypes, but the pheno str is always a substr of the run str
+    #Hard-coded phenotype order so that yield is first, fhb last, everything else in middle.
+    pheno_order = {"Yield": {"LA":[], "MS":[], "SAR":[], "NAR":[], "C1":[], "LATX":[]}, 
+            "Misc": {},
+            "FHB": {"RAT":[], "FDK":[], "DON":[],}}
+
+    for run_str in run_array:
+        #This gets 2 and 3rd underscore-sep str text
+        try:
+            inner_str = re.search("^[^_]*_([^_]*_[^_]*)", run_str).groups(0)[0]
+        except:
+            print("Run string " + run_str + " not properly formatted!")
+
+        str_fields = re.search("^([^_]*)_([^_]*)$", inner_str).groups(0)
+
+        if bool(re.search("Fhb|FHB", str_fields[1])):
+            pheno_order["FHB"][str_fields[0]].append(run_str)
+        elif bool(re.search("Yield|Yld|YIELD", str_fields[0])):
+            pheno_order["Yield"][str_fields[1]].append(run_str)
+        else:
+            pheno_order["Misc"][str_fields[0]] = run_str
+
+    sorted_run_array = []
+
+    for yield_pheno in pheno_order["Yield"].keys():
+        #This will ignore empty. If not empty, will usually be len of 1
+        for run_str in pheno_order["Yield"][yield_pheno]:
+                sorted_run_array.append(run_str)
+        
+
+    for misc_pheno in pheno_order["Misc"].keys():
+        sorted_run_array.append(pheno_order["Misc"][misc_pheno])
+
+    for fhb_pheno in pheno_order["FHB"].keys():
+        #This will ignore empty. If not empty, will usually be len of 1
+        for run_str in pheno_order["FHB"][fhb_pheno]:
+                sorted_run_array.append(run_str)
+    
+    return sorted_run_array
+
 def plotIdToInt(plot_id_str):
         plot_int = int(re.search(r'\d*$', plot_id_str).group(0))
         return(plot_int)
@@ -356,6 +399,8 @@ def fieldbookView(request):
 
 
     trial_str = requestDict['trial_str']
+
+    selected_runs = orderRuns(selected_runs)
 
     preds_dict = {}
     max_min_dict = {}
@@ -434,7 +479,6 @@ def fieldbookView(request):
                 with open(outfile_str, 'w') as file:
                     file.write(html_content)
 
-        #return render(request, "tools/fieldbooks.html", args)
         fieldbook_files = []
 
         #Should include code here for making and deleting a folder with html files for a test and date. 
