@@ -7,6 +7,7 @@ import shutil
 from datetime import date, datetime
 from io import TextIOWrapper
 from pathlib import Path
+from math import ceil
 
 from django.shortcuts import get_object_or_404, render
 from django.db.models import Q, Min, Max
@@ -235,7 +236,7 @@ def getScaleColor(value, max_val, min_val):
 
     return hex_val
 
-def getFieldbookArgs(trial_family_transitions, preds_dict, max_min_dict, trial_str):
+def getFieldbookArgs(trial_family_transitions, preds_dict, max_min_dict, trial_str, cut_str):
     args = {}
     args['preds'] = {}
 
@@ -257,7 +258,6 @@ def getFieldbookArgs(trial_family_transitions, preds_dict, max_min_dict, trial_s
         try:
             fam_object = Families.objects.get(pk = fam_str)
         except:
-            print(plt_str)
             if not fam_str is None:
                 print("Error -- family " + str(fam_str) + " not found.")
                 fam_str = None
@@ -320,8 +320,6 @@ def getFieldbookArgs(trial_family_transitions, preds_dict, max_min_dict, trial_s
             famless_plot = Plots.objects.all().filter(plot_id = prev_plt_str)
             famless_table = FamilyPlotsTable(famless_plot) 
 
-            print(famless_plot.values_list())
-            
             #Keys have to be unique. In the template, will test for presence
             #Of trial str as substr of family_object
             famless_dict['family_object'] = prev_plt_str
@@ -337,7 +335,7 @@ def getFieldbookArgs(trial_family_transitions, preds_dict, max_min_dict, trial_s
     #Trial information for title page
     trial_object = Trials.objects.get(pk = trial_str)
 
-    args['trial_info'] = {'trial_str':trial_str,
+    args['trial_info'] = {'trial_str':trial_str + re.sub("Cut", "Cut ", cut_str),
                           'trial_year': trial_object.year_text,
                           'trial_loc': trial_object.location_text,
                           'trial_type': trial_object.plot_type,
@@ -405,7 +403,6 @@ def fieldbookView(request):
     trial_type = Trials.objects.values_list("plot_type", flat=True).get(pk=trial_str)
 
     if trial_type == "HR":
-        print(trial_family_transitions)
         #Generate multiple fieldbooks in 1,000 HR increments
         cur_trial_family_transitions = []
         cur_trial_start = plotIdToInt(trial_family_transitions[0][0]) 
@@ -413,21 +410,16 @@ def fieldbookView(request):
         for i, plot_fam in enumerate(trial_family_transitions, start = 1):
             cur_plot_int = plotIdToInt(plot_fam[0])
 
-            print("X")
-            print(plot_fam[0])
-            print(plot_fam[1])
-
             #Always have to do this -- first plot of new set will trigger rendering of last
             cur_trial_family_transitions.append(plot_fam)
 
             if ((cur_plot_int - cur_trial_start) >= 1000) or (i == len(trial_family_transitions)):
-                print(plot_fam)
 
-                print(cur_trial_family_transitions)
+                #Cut = grouping of 1000 headrows
+                first_plot_int = plotIdToInt(cur_trial_family_transitions[0][0])
+                cut_str = "Cut" + str(ceil(first_plot_int/1000))
 
-                args = getFieldbookArgs(cur_trial_family_transitions, preds_dict, max_min_dict, trial_str) 
-
-                print(args)
+                args = getFieldbookArgs(cur_trial_family_transitions, preds_dict, max_min_dict, trial_str, cut_str = " - " + cut_str) 
 
                 cur_trial_start = cur_plot_int
                 cur_trial_family_transitions = []
@@ -437,7 +429,8 @@ def fieldbookView(request):
                 base_dir = str(settings.BASE_DIR)
                 html_dir = base_dir + "/tools/templates/temporary_fieldbooks/"
 
-                outfile_str = html_dir + trial_str + "_" + str(cur_plot_int) + ".html"
+
+                outfile_str = html_dir + trial_str + "_" + cut_str + ".html"
                 with open(outfile_str, 'w') as file:
                     file.write(html_content)
 
@@ -454,7 +447,7 @@ def fieldbookView(request):
         return render(request, "tools/fieldbook_filedir.html", args)
 
     else:
-        args = getFieldbookArgs(trial_family_transitions, preds_dict, max_min_dict, trial_str)        
+        args = getFieldbookArgs(trial_family_transitions, preds_dict, max_min_dict, trial_str, cut_str = "")        
         return render(request, "tools/fieldbooks.html", args)
 
 def renderFieldbookView(request, file_str):

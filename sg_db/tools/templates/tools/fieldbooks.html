@@ -1,7 +1,12 @@
+
 {% load static %}
 
 {% block extrastyles %}
-	<title> Test Fieldbook </title>
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width" />
+	<title> {{ trial_info.trial_str }} Fieldbook </title>
+	<link rel="stylesheet" href={% static 'sg_db/css/base_style.css' %}>
+        <link rel="stylesheet" href={% static 'sg_db/css/table_style.css' %}>
 	<link rel="stylesheet" href={% static 'sg_db/css/fieldbook_style.css' %}>
 {% endblock %}
 
