@@ -69,7 +69,10 @@ def crossesWrapperView(request):
     elif request.method == 'POST':
         Crosses_File = request.FILES["Crosses_File"]
         rows = TextIOWrapper(Crosses_File, encoding="utf-8", newline="")
+        print("Test:")
         for row in reversed(list(csv.DictReader(rows))):
+            print("Hello")
+            print(row)
             print(row['crossDbId'])
             #Should this chunk here be moved to the model.save() function?
 
