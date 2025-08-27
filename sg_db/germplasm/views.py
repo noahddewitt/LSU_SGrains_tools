@@ -205,8 +205,16 @@ def newNurseryPlotsTableView(request):
 
     #TD -Calculate total length of nursery to get prepend digits
     if requestDict['plot-type'] == "HRs":
-      rowsPerFamily = int(requestDict['row-number'])
+
+      #Two different modes, fixed number of HRs per stock, or
+      #use all available heads. One requires set #
+      if requestDict['row-number'] != "Available":
+        rowsPerFamily = int(requestDict['row-number'])
+
       for stock in baseTable:
+        if requestDict['row-number'] == "Available":
+            rowsPerFamily = int(stock.amount_decimal)
+
         famRowsAllocated = 0
         while famRowsAllocated < rowsPerFamily:
             curPlotStr = "_" + str(curPlot).rjust(5, "0")
